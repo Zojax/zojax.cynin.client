@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"  xmlns:stackerview="ui.stackviews.*"
+  width="378" height="240" title="Update Check" creationComplete="inited()" styleName="BlackWdw" showCloseButton="false">
+  <mx:states>
+    <mx:State name="notavailable">
+      <mx:SetProperty target="{txtVersionMessage}" name="text">
+        <mx:value>An update is not available at this time. Zojax Desktop will automatically inform you when there is an update available.</mx:value>
+      </mx:SetProperty>
+      <mx:SetStyle target="{txtVersionMessage}" name="top"/>
+      <mx:SetStyle target="{txtVersionMessage}" name="verticalCenter" value="0"/>
+      <mx:SetProperty target="{svwChecking}" name="visible" value="false"/>
+    </mx:State>
+  </mx:states>
+  <mx:Script>
+    <![CDATA[
+      import model.versions.VersionEvent;
+      import model.updates.updatemodel;
+      import mx.managers.PopUpManager;
+      private function inited():void
+      {
+        updatemodel.instance.addEventListener(VersionEvent.VERSION_NEW_AVAILABLE,handleNewVersionAvailable);
+        updatemodel.instance.addEventListener(VersionEvent.VERSION_NEW_NOT_AVAILABLE,handleNewVersionNotAvailable);
+        updatemodel.instance.checkForUpdate();
+      }
+      private function handleNewVersionNotAvailable(event:VersionEvent):void
+      {
+        currentState = "notavailable";
+      }
+      private function handleNewVersionAvailable(event:VersionEvent):void
+      {
+        PopUpManager.removePopUp(this);
+      }
+    ]]>
+  </mx:Script>
+  <mx:Text
+    text="Zojax Desktop is checking for updates..."
+      left="10" top="10" right="10" id="txtVersionMessage" styleName="textwhite" height="52"/>
+  <stackerview:PageChanging id="svwChecking"  verticalCenter="0" horizontalCenter="0"/>
+  <mx:ControlBar autoLayout="true" horizontalAlign="right" verticalAlign="middle" id="controlbar1">
+    <mx:Button label="Close" id="btnClose" click="PopUpManager.removePopUp(this)" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/delete.png')"/>
+  </mx:ControlBar>
+</mx:TitleWindow>

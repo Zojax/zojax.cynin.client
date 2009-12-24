@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" creationComplete="inited()" xmlns:control="ui.controls.*" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+<mx:Script>
+	<![CDATA[
+		import model.comments.CommentEvent;
+		import mx.managers.PopUpManager;
+
+		import model.updates.UpdateItem;
+		import mx.binding.utils.ChangeWatcher;
+		import model.logger.Logger;
+		import model.comments.CommentInfo;
+		[Bindable] public var _comment:CommentInfo = null;
+		[Bindable] public var _context:UpdateItem = null;
+		[Bindable] private var _depthpad:int = 1;
+		
+		private function inited():void
+		{
+			if (_comment ==null)
+			{
+				if (ChangeWatcher.canWatch(_comment,"depth"))
+				{
+					ChangeWatcher.watch(_comment,"depth",binded);
+				}
+			}
+			else
+			{
+				binded(null);
+			}
+		}
+		
+		private function binded(event:Event):void
+		{
+			if (_comment != null)
+			{
+				if (_depthpad <15)
+				{
+					_depthpad = _comment.depth * 15; //pad to the left by how many pixels.
+				}
+				else
+				{
+					_depthpad = 15 * 15; //pad to the left by how many pixels.
+				}
+			}
+		}
+		
+		private function handleReplyClick(event:Event):void
+		{
+			dispatchEvent(new CommentEvent(CommentEvent.USER_REQUESTED_REPLY,_comment));
+		}
+	]]>
+</mx:Script>
+	<mx:Grid id="cnvPad" left="{10 + _depthpad}" right="10" width="{335 - _depthpad}"  styleName="fivepxbox" >
+		<mx:GridRow paddingTop="5"  >
+			<mx:GridItem rowSpan="2" horizontalAlign="right" paddingLeft="5" >
+				<control:AvatarWithUserName id="imgCommenter" AvatarImageURL="{_comment.commenterVO.portrait_url}" AvatarUsername="{_comment.commenter}" />
+			</mx:GridItem>
+			<mx:GridItem paddingRight="5">
+				<mx:Label text="{_comment.title}" id="lblTitle" styleName="CommentTitle" width="{335 - 10 - _depthpad}"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow  verticalAlign="top">
+			<mx:GridItem width="100%" paddingLeft="5" verticalAlign="top" >
+				<mx:Text text="{_comment.commenttext}" width="{335 - 10 - _depthpad}" height="100%" styleName="CommentBody"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow paddingBottom="5" width="100%" verticalAlign="middle">
+			<mx:GridItem paddingRight="5" horizontalAlign="right" width="100%"  colSpan="2" verticalAlign="middle">
+				<mx:Label text="{_comment.commentdatetime}" id="lblModified" styleName="CommentDateTime"/>
+				<mx:Button label="Reply" id="btnReply" click="handleReplyClick(event)" visible="{_context.canComment}" styleName="Reply">
+					<mx:icon>@Embed(source='../../assets/icons/comment_add.png')</mx:icon>
+				</mx:Button>
+			</mx:GridItem>
+		</mx:GridRow>
+	</mx:Grid>
+</mx:Canvas>

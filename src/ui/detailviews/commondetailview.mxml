@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="inited()" width="400" height="540"   xmlns:flexlib="flexlib.containers.*"
+  xmlns:control="ui.controls.*"  styleName="MainWindow" horizontalScrollPolicy="off" verticalScrollPolicy="off" xmlns:detailviews="ui.detailviews.*">
+  <mx:Script>
+    <![CDATA[
+      import mx.containers.VBox;
+      import mx.controls.Button;
+      import model.updates.BaseItem;
+      import model.updates.StringConstants;
+      import model.types.FileItem;
+      import mx.controls.TabBar;
+      import model.updates.LoadingEvent;
+      import model.updates.updateitemevent;
+      import model.comments.CommentEvent;
+      import model.users.userinfo;
+      import mx.managers.PopUpManager;
+
+      import ui.comments.singlecomment;
+      import model.comments.CommentInfo;
+      import model.updates.updatemodel;
+      import mx.collections.ArrayCollection;
+      import model.types.BlogEntry;
+      import model.types.LinkItem;
+      import model.types.EventItem;
+      import model.types.WikiPage;
+      import mx.formatters.DateFormatter;
+      import model.logger.Logger;
+      import mx.binding.utils.ChangeWatcher;
+      import model.updates.UpdateItem;
+      import mx.collections.ItemResponder;
+      import mx.rpc.AsyncToken;
+      import mx.rpc.events.FaultEvent;
+      import mx.rpc.events.ResultEvent;
+
+      [Bindable] private var _dayofmonth:String = null;
+      [Bindable] private var _month:String = null;
+      [Bindable] private var _year:String = null;
+      [Bindable] private var _hours:String = null;
+      [Bindable] private var _minutes:String = null;
+      [Bindable] private var _ampm:String = null;
+
+      private var _detailLoaded:Boolean = false;
+      private var _commentsLoaded:Boolean = false;
+
+      private var _comments:ArrayCollection = new ArrayCollection();
+
+      [Bindable] private var _item:UpdateItem;
+
+      private var _df:DateFormatter = new DateFormatter();
+      private function inited():void
+      {
+        updatemodel.instance.addEventListener(updateitemevent.SELECTED,handleModifiedChanged);
+        updatemodel.instance.addEventListener(updateitemevent.UPDATED,handleUpdatedItem);
+        dvwAddComment.addEventListener(CommentEvent.ADD_COMMENT_SUCCEEDED, handleAddCommentSuccess);
+        dvwBar.addEventListener(CommentEvent.USER_REQUESTED_REPLY,handleReplyCommentRequest);
+        _item = updatemodel.instance.selectedItem;
+      }
+
+      private function handleModifiedChanged(event:updateitemevent):void
+      {
+        _item = updatemodel.instance.selectedItem;
+//				cnvAddComment.label =  "Discuss (" + _item.commentcount + ")";
+        //cnvAddComment.validateNow();
+        tbnMain.validateNow();
+
+        _detailLoaded = false;
+        _commentsLoaded = false;
+        if (_item != null)
+        {
+          var item:UpdateItem = _item;
+          _df.formatString = "DD";
+          _dayofmonth = _df.format(item.lastchangedate);
+          _df.formatString = "MMM";
+          _month = _df.format(item.lastchangedate);
+          _year = item.lastchangedate.fullYear.toString();
+          _df.formatString = "LL";
+          _hours = _df.format(item.lastchangedate);
+          _df.formatString = "NN";
+          _minutes = _df.format(item.lastchangedate);
+          _df.formatString = "A";
+          _ampm = _df.format(item.lastchangedate);
+          loadTypeDetailView();
+        }
+        else
+        {
+          _dayofmonth = "";
+          _month = "";
+          _year = "";
+          _hours = "";
+          _minutes = "";
+          _ampm = "";
+          unloadTypeDetailView();
+        }
+      }
+
+      private function handleAddCommentSuccess(event:CommentEvent):void
+      {
+        if (updatemodel.instance._searchCurrentTerm == "") updatemodel.instance.getRecentUpdates();
+      }
+
+      private function loadTypeDetailView():void
+      {
+        unloadTypeDetailView();
+        if (_item != null)
+        {
+          switch (_item.portal_type)
+          {
+            case "contenttype.document":
+              var wp:WikiPage = new WikiPage(_item);
+              var wpv:wikipageview = new wikipageview();
+              wpv.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              wpv._wikipage = wp;
+              cnvTypeDetail.addChild(wpv);
+              break;
+            case "contenttype.event":
+              var ei:EventItem = new EventItem(_item);
+              var eiv: eventitemview = new eventitemview();
+              eiv.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              eiv._event = ei;
+              cnvTypeDetail.addChild(eiv);
+              break;
+            case "contenttype.file":
+              var fi:FileItem = new FileItem(_item);
+              var fileview:fileitemview = new fileitemview();
+              fileview.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              fileview._file = _item;
+              fileview._fileitem = fi;
+              cnvTypeDetail.addChild(fileview);
+              break;
+            case "contenttype.image":
+              var ifi:FileItem = new FileItem(_item);
+              var imgview:imageitemview = new imageitemview();
+              imgview.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              imgview._fileitem = ifi;
+              cnvTypeDetail.addChild(imgview);
+              break;
+            case "content.blogpost":
+              var be:BlogEntry = new BlogEntry(_item);
+              var bev:blogentryview = new blogentryview();
+              bev.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              bev._blogentry = be;
+              cnvTypeDetail.addChild(bev);
+              break;
+            case "Link":
+              var lin:LinkItem = new LinkItem(_item);
+              var linvw:linkitemview = new linkitemview();
+              linvw.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+              linvw._link = lin;
+              cnvTypeDetail.addChild(linvw);
+              break;
+            default:
+              detailLoaded(null);
+              break;
+          }
+          loadComments()
+        }
+      }
+
+
+      private function detailLoaded(event:LoadingEvent):void
+      {
+        _detailLoaded = true;
+        sendLoadedEvent();
+      }
+
+      private function unloadTypeDetailView():void
+      {
+        cnvTypeDetail.removeAllChildren();
+      }
+
+      private function loadComments():void
+      {
+        unloadComments();
+        if (_item == null || ! _item is UpdateItem)
+        {
+          return;
+        }
+        if (_item.allowedcomments)
+          updatemodel.instance._xserver.getComments(_item.itemuid).addResponder(new ItemResponder(handleGetCommentsResponse, handleGetCommentsFaultResponse));
+        else
+        {
+          _commentsLoaded = true;
+        }
+      }
+
+      public function handleGetCommentsResponse(event:ResultEvent, token : AsyncToken = null):void
+      {
+
+                var retArr:Array = event.result as Array;
+                for each (var o:Object in retArr)
+                {
+                  var oitem:CommentInfo = new CommentInfo(o);
+                  var acomment:singlecomment = new singlecomment();
+                  acomment._comment = oitem;
+                  acomment._context = _item;
+                  acomment.addEventListener(CommentEvent.USER_REQUESTED_REPLY,handleReplyCommentRequest);
+                  _comments.addItem(acomment);
+                  _comments.refresh();
+          var userind:int = updatemodel.instance.UserAlreadyExistsById(acomment._comment.commenter);
+          if (userind <0)
+          {
+            updatemodel.instance.fetchUserinfo(acomment._comment.commenter);
+          }
+          else
+          {
+            acomment._comment.commenterVO = updatemodel.instance._users.getItemAt(userind) as userinfo;
+          }
+          acomment.horizontalScrollPolicy = "off";
+          acomment.verticalScrollPolicy = "off";
+                  vbxComments.addChild(acomment);
+                }
+        _commentsLoaded = true;
+        sendLoadedEvent();
+      }
+
+
+      private function sendLoadedEvent():void
+      {
+        if (_detailLoaded == true && _commentsLoaded == true )
+        dispatchEvent(new LoadingEvent(LoadingEvent.LOADED_DETAIL_VIEW));
+      }
+
+      public function handleReplyCommentRequest(event:CommentEvent):void
+      {
+        if (_item.portal_type!=StringConstants.TYPE_STATUSMESSAGE)
+        {
+          if (updatemodel.instance.InCommentingMode == false)
+          {
+            updatemodel.instance.InCommentingMode = true;
+            dvwAddComment._comment = event.commentvo;
+            dvwAddComment.currentState = "editing";
+            dvwAddComment.taCommentBody.setFocus();
+          }
+          else
+          {
+            Logger.instance.log("Respectfully deny the Reply comment request here, because there is already a comment open for addition / reply",Logger.SEVERITY_NORMAL);
+          }
+        }
+      }
+      public function handleUpdatedItem(event:updateitemevent):void
+      {
+        if (_item == null || event.item.itemuid == _item.itemuid)
+        {
+          Logger.instance.log("REFRESHING detail view");
+          _item = updatemodel.instance.selectedItem;
+          handleModifiedChanged(null);
+        }
+      }
+      public function handleGetCommentsFaultResponse(event:FaultEvent, token : AsyncToken = null):void
+      {
+              Logger.instance.log("Could not fetch comments: " + event.fault.message, Logger.SEVERITY_SERIOUS);
+      }
+
+      private function unloadComments():void
+      {
+        if (vbxComments != null)
+        {
+          vbxComments.removeAllChildren();
+        }
+        _comments.removeAll();
+      }
+    ]]>
+  </mx:Script>
+  <mx:HBox x="5" y="5" horizontalGap="0" verticalAlign="middle">
+    <mx:Label text="{_item.title}" id="txtItemTitle" styleName="WindowTitle" alpha="0.8"
+      maxWidth="{this.width - (txtItemTitle.x *2) - txtTypeTitle.width - 16 - 20}" />
+    <mx:HBox horizontalGap="0" paddingBottom="3" paddingLeft="3" paddingTop="3"  paddingRight="3" styleName="TypeBackground" verticalScrollPolicy="off" verticalAlign="middle" horizontalScrollPolicy="off">
+      <mx:Image width="16" height="16" id="imgTypeIcon" source="{_item.typevo.typeiconurl}" verticalAlign="middle"/>
+      <mx:Label text="{_item.typevo.typetitle}" textAlign="left" id="txtTypeTitle" styleName="WindowSmallText" paddingLeft="0" paddingRight="0" alpha="0.8" />
+    </mx:HBox>
+  </mx:HBox>
+  <flexlib:ButtonScrollingCanvas y="38" height="60"  buttonWidth="16" startScrollingEvent="{MouseEvent.MOUSE_OVER}" stopScrollingEvent="{MouseEvent.MOUSE_OUT}"
+     scrollJump="5" scrollSpeed="100" horizontalScrollPolicy="off" left="90" right="70" downButtonStyleName="ScrollDown" upButtonStyleName="ScrollUp" leftButtonStyleName="ScrollLeft" rightButtonStyleName="ScrollRight" >
+    <mx:Text text="{(_item).description}" id="txtDescription" styleName="WindowDescription" left="0" top="0" width="100%"/>
+  </flexlib:ButtonScrollingCanvas>
+  <mx:Canvas y="38" styleName="DateBackground" x="0" height="60" horizontalScrollPolicy="off" verticalScrollPolicy="off"  width="80">
+    <mx:Label text="{_dayofmonth}" id="txtModifiedDay" styleName="WindowDateDay" width="43" height="32" alpha="0.7" left="1" top="0"/>
+    <mx:Label text="{_month}" id="txtModifiedMonth" styleName="WindowDateMonth" width="37" alpha="0.7" left="41" top="2"/>
+    <mx:Label text="{_year}" id="txtModifiedYear" styleName="WindowDateYear" width="37" alpha="0.7" left="41" top="19"/>
+    <mx:Label text="{_hours + ':' + _minutes + ' ' + _ampm}" id="txtModifiedTime" styleName="WindowDateTime" width="80" height="16" alpha="0.7" left="0"
+      bottom="4"/>
+  </mx:Canvas>
+  <control:AvatarWithUserName  AvatarImageURL="{_item.creatoruservo.portrait_url}" AvatarUsername="{_item.creator}" right="10" top="38"/>
+  <mx:VBox top="109" bottom="0" verticalGap="0">
+  <mx:TabNavigator left="0" id="tbnMain" styleName="MainWindowTabNav" width="{this.width}" height="100%"
+    creationPolicy="all" resizeToContent="false">
+    <mx:Canvas width="100%" height="100%" id="cnvTypeDetail" label="View"/>
+    <mx:Canvas id = "cnvCommentHolder" bottom="0" left="0" top="0" width="{tbnMain.width - 10}"
+      label="Discuss" horizontalScrollPolicy="off" verticalScrollPolicy="auto">
+      <mx:VBox id="vbxComments" left="0" width="{cnvCommentHolder.width - 10}" height="100%" top="0" label="Discuss"/>
+    </mx:Canvas>
+  </mx:TabNavigator>
+  <detailviews:AddComment id="dvwAddComment" visible="{_item.canComment}"
+  right="0" left="0" _context="{_item}"/>
+  <detailviews:DetaiButtonlBar left="0" right="0" id="dvwBar" bottom="0"/>
+  </mx:VBox>
+    <mx:filters>
+      <mx:DropShadowFilter
+        distance="0"
+        quality="5"
+        blurX="5"
+        blurY="5"
+        alpha=".7"
+        angle="90" />
+      </mx:filters>
+</mx:Canvas>

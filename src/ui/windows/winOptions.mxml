@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="396"
+  height="314" title="Settings For Zojax Desktop" creationComplete="inited()"
+  styleName="BlackWdw" showCloseButton="false" xmlns:controls="ui.controls.*">
+  <mx:Script>
+    <![CDATA[
+      import model.updates.StringConstants;
+      import model.options.OptionsEvent;
+      import model.updates.updatemodel;
+      import model.logger.Logger;
+      import model.options.OptionsModel;
+      import mx.events.SliderEvent;
+      import mx.managers.PopUpManager;
+      [Bindable] private var appversion:String = "";
+
+
+      private function inited():void
+      {
+        cbxStartup.selected = OptionsModel.instance.StartOnLogon;
+        cbxAutoShow.selected = OptionsModel.instance.AutoShow;
+        cbxAlwaysOnTop.selected = OptionsModel.instance.AlwaysOnTop;
+        cbxShowInTaskbar.selected = OptionsModel.instance.ShowInTaskBar;
+
+        hsldUpdateFrequency.value = OptionsModel.instance.UpdateFrequency;
+        lblSeconds.text = "Update Frequency (" +hsldUpdateFrequency.value + " seconds):";
+      }
+
+      private function handleStartOnLogon(event:Event):void
+      {
+        OptionsModel.instance.StartOnLogon = cbxStartup.selected;
+      }
+
+      private function handleBack():void
+      {
+
+        OptionsModel.instance.OptionsCompleted();
+      }
+
+      private function handleFreqChanged(event:SliderEvent):void
+      {
+        lblSeconds.text = "Update Frequency (" +hsldUpdateFrequency.value + " seconds):";
+        OptionsModel.instance.UpdateFrequency = hsldUpdateFrequency.value;
+      }
+      private function handleAutoShowChanged(event:Event):void
+      {
+        OptionsModel.instance.AutoShow = cbxAutoShow.selected;
+      }
+      private function clearAndLogout():void
+      {
+        OptionsModel.instance.SavePassword = false;
+        OptionsModel.instance.SaveCynInID = false;
+        EncryptedLocalStore.reset();
+        updatemodel.instance.LogOut();
+        PopUpManager.removePopUp(this);
+      }
+      private function clearCache():void
+      {
+        updatemodel.instance.clearCache();
+      }
+      private function handleAlwaysOnTopChanged(event:Event):void
+      {
+        OptionsModel.instance.AlwaysOnTop = cbxAlwaysOnTop.selected;
+      }
+      private function handleShowInTaskBarChanged(event:Event):void
+      {
+        OptionsModel.instance.ShowInTaskBar = cbxShowInTaskbar.selected;
+      }
+    ]]>
+  </mx:Script>
+  <mx:TabNavigator styleName="OptionsTabNav" id="tnOptions" left="10" right="10" top="10" bottom="10" creationPolicy="all">
+    <mx:Canvas label="General" width="100%" height="100%">
+      <mx:CheckBox label="Start on OS Startup" id="cbxStartup" enabled="true" change="handleStartOnLogon(event)" color="white" top="39" horizontalCenter="-79"/>
+      <mx:HSlider id="hsldUpdateFrequency" minimum="10" maximum="600" enabled="true"   snapInterval="25" change="handleFreqChanged(event)" height="18" x="31" y="138"/>
+      <mx:Label y="121" text="Update Frequency (seconds): " id="lblSeconds" color="white" styleName="textwhite" x="31"/>
+    </mx:Canvas>
+    <mx:Canvas label="Dock Window" width="100%" height="100%">
+      <mx:CheckBox label="Show on new activity" id="cbxAutoShow" change="handleAutoShowChanged(event)" enabled="true" y="24" left="26"/>
+      <mx:CheckBox label="Always on top" id="cbxAlwaysOnTop" change="handleAlwaysOnTopChanged(event)" enabled="true" y="55" left="26"/>
+      <mx:CheckBox label="Show in taskbar (will cause UI reset)" id="cbxShowInTaskbar" change="handleShowInTaskBarChanged(event)" enabled="true" y="85" left="26"/>
+    </mx:Canvas>
+    <controls:MultiMonitorOptions width="100%" height="100%"/>
+  </mx:TabNavigator>
+
+  <mx:ControlBar autoLayout="true" horizontalAlign="right">
+    <mx:Button label="Clear Cache" id="btnClearCache" enabled="true" click="clearCache()" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/database_refresh.png')"/>
+    <mx:Button label="Reset to Default" id="btnReset" enabled="true" click="clearAndLogout()" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/arrow_redo.png')"/>
+    <mx:Button label="Close" id="btnBack" enabled="true" click="handleBack()" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/delete.png')"/>
+  </mx:ControlBar>
+
+</mx:TitleWindow>

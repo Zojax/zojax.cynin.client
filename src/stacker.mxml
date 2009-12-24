@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+  creationComplete="handleCreationComplete(event)"
+  xmlns:ak33m="http://ak33m.com/mxml"    visible="false"
+  >
+  <mx:Style source="styles/skin1/style.css" />
+
+  <mx:Script>
+    <![CDATA[
+      import mx.binding.utils.BindingUtils;
+      import ui.windows.winKeyboardHelp;
+      import model.options.OptionsEvent;
+      import ui.windows.winUpdateNotAvailable;
+      import ui.windows.winAbout;
+      import mx.managers.PopUpManager;
+      import model.updates.StringConstants;
+      import mx.events.MenuEvent;
+      import model.options.OptionsModel;
+
+      import ui.windows.winTileStack;
+      import model.updates.updateitemevent;
+      import model.updates.updatemodel;
+      import model.updates.UpdateItem;
+      import mx.controls.Alert;
+        import mx.rpc.events.ResultEvent;
+          import mx.utils.Base64Encoder;
+            import mx.rpc.events.FaultEvent;
+            import mx.collections.ItemResponder;
+      import mx.rpc.AsyncToken;
+      import model.logger.Logger;
+      import model.logger.LogEvent;
+      import model.updates.updateitemevent
+
+      namespace airAppNS = "http://ns.adobe.com/air/application/1.5";
+
+      static private var vbxStacker:winTileStack = null;
+
+      static private var _cachedir:File = null;
+      static public var sysTrayMenu: NativeMenu = null;
+      private var _AppIcons:Array = [];
+      private var mnuiAOT: NativeMenuItem ;
+
+      private function handleCreationComplete(event: Event): void
+      {
+        // Create the cyn.in Stacker data folder if it doesn't exist (inside the user's
+        // document's folder).
+        var docRoot: File = File.documentsDirectory.resolvePath(StringConstants.APP_NAME);
+        docRoot.createDirectory();
+
+        // Initialize the logger. The logger writes to the file Log.txt in the
+        // cyn.in Stacker data folder. We keep the previous 3 log files around.
+        var oldLogFile: File;
+        for (var i: int = 2; i >= 0; i--)
+        {
+          oldLogFile = docRoot.resolvePath("Log" + (i == 0 ? "" : String(i)) + ".txt");
+          if (oldLogFile.exists)
+          {
+            try
+            {
+              oldLogFile.moveTo(docRoot.resolvePath("Log" + String(i+1) + ".txt"), true);
+            }
+            catch (e: Error)
+            {
+              // Too early to log this. Oh well. It just means that we won't be preserving
+              // log files earlier than the current one.
+              trace("Can't back up log file " + oldLogFile.name);
+            }
+          }
+        }
+        Logger.instance.initialize(docRoot.resolvePath("Log.txt"));
+        Logger.instance.addEventListener(LogEvent.LOG_ITEM, handleLogItem);
+
+        Logger.instance.log( StringConstants.APP_NAME + " starting");
+
+        _cachedir = docRoot.resolvePath("cache");
+        _cachedir.createDirectory();
+
+
+          // Create the system tray icon and attach standard menu to it (if supported).
+          sysTrayMenu = new NativeMenu();
+
+          var restoreItem: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Show"));
+          restoreItem.name = "showhide";
+          restoreItem.addEventListener(Event.SELECT, handleShowHide);
+
+          mnuiAOT = sysTrayMenu.addItem(new NativeMenuItem("Always on top"));
+          mnuiAOT.name = "alwaysontop";
+          mnuiAOT.addEventListener(Event.SELECT, handleAOT);
+
+          var refreshItem: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Refresh Page (F5)"));
+          refreshItem.name = "refresh";
+          refreshItem.addEventListener(Event.SELECT, handleRefresh);
+
+        sysTrayMenu.addItem(new NativeMenuItem("",true));
+
+          var mnuiOptions: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Options"));
+          mnuiOptions.name = "options"
+          mnuiOptions.addEventListener(Event.SELECT, handleShowOptions);
+
+          var mnuiKeyboardHelp: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Keyboard Help"));
+          mnuiKeyboardHelp.name = "keyboardhelp"
+          mnuiKeyboardHelp.addEventListener(Event.SELECT, handleKeyboardHelp);
+
+          //var mnuiUpdate: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Check for updates"));
+          //mnuiUpdate.name = "updates"
+          //mnuiUpdate.addEventListener(Event.SELECT, handleCheckForUpdates);
+
+          var mnuiAbout: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("About Zojax Desktop"));
+          mnuiAbout.name = "about";
+          mnuiAbout.addEventListener(Event.SELECT, handleAbout);
+
+        sysTrayMenu.addItem(new NativeMenuItem("",true));
+
+          var mnuiLogout: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Logout"));
+          mnuiLogout.name = "logout";
+          mnuiLogout.addEventListener(Event.SELECT, handleLogout);
+
+          var exitItem: NativeMenuItem = sysTrayMenu.addItem(new NativeMenuItem("Exit"));
+          exitItem.name = "exit";
+          exitItem.addEventListener(Event.SELECT, handleSysTrayExit);
+
+          var iconLoader: Loader
+          iconLoader = new Loader();
+          iconLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleSysTrayIconComplete);
+          iconLoader.load(new URLRequest("icons/stacker-icon-flat-128.png"));
+          iconLoader = new Loader();
+          iconLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleSysTrayIconComplete);
+          iconLoader.load(new URLRequest("icons/stacker-icon-flat-48.png"));
+          iconLoader = new Loader();
+          iconLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleSysTrayIconComplete);
+          iconLoader.load(new URLRequest("icons/stacker-icon-flat-32.png"));
+          iconLoader = new Loader();
+          iconLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleSysTrayIconComplete);
+          iconLoader.load(new URLRequest("icons/stacker-icon-flat-16.png"));
+
+          Logger.instance.log("Adding Options listeners");
+          OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_SHOW_IN_TASKBAR_CHANGED,handleShowInTaskbarChanged);
+          OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_ALWAYS_ON_TOP_CHANGED,handleAOTChanged);
+
+          Logger.instance.log("Loading Main Window");
+          LoadWindow();
+          mnuiAOT.checked = OptionsModel.instance.AlwaysOnTop;
+          /************* Event Handler registrations *********************/
+        Logger.instance.log( StringConstants.APP_NAME + " startup completed.");
+        Logger.instance.log("Auto Startup is currently set to: " + OptionsModel.instance.StartOnLogon,Logger.SEVERITY_NORMAL);
+      }
+
+      private function LoadWindow():void
+      {
+          /****** Launch Stacker main window ********/
+        vbxStacker = new winTileStack();
+        vbxStacker.alwaysInFront = OptionsModel.instance.AlwaysOnTop;
+        Logger.instance.log("Started with ShowInTaskbar: " + OptionsModel.instance.ShowInTaskBar);
+        if (OptionsModel.instance.ShowInTaskBar)
+        {
+          vbxStacker.type = NativeWindowType.NORMAL;
+        }
+        else
+        {
+          vbxStacker.type = NativeWindowType.LIGHTWEIGHT;
+        }
+
+        Logger.instance.log("Started with alwaysontop: " + OptionsModel.instance.AlwaysOnTop);
+
+
+        vbxStacker.open();
+      }
+
+      private function handleShowInTaskbarChanged(event:OptionsEvent):void
+      {
+        if (instanceStack != null)
+        {
+          instanceStack.close();
+          LoadWindow();
+        }
+      }
+      private function handleAOTChanged(event:OptionsEvent):void
+      {
+        mnuiAOT.checked = OptionsModel.instance.AlwaysOnTop;
+      }
+
+      private function handleShowOptions(event:Event):void
+      {
+        instanceStack.handleBtnOptions(null);
+      }
+      private function handleKeyboardHelp(event:Event):void
+      {
+        var owKbHelp:winKeyboardHelp = new winKeyboardHelp();
+        PopUpManager.addPopUp(owKbHelp,instanceStack,false);
+        PopUpManager.centerPopUp(owKbHelp);
+      }
+
+      private function handleCheckForUpdates(event:Event):void
+      {
+        var owCheck:winUpdateNotAvailable = new winUpdateNotAvailable();
+        PopUpManager.addPopUp(owCheck,instanceStack,false);
+        PopUpManager.centerPopUp(owCheck);
+      }
+      private function handleShowHide(event:Event):void
+      {
+        instanceStack.handletongueclick(null);
+      }
+      private function handleAOT(event:Event):void
+      {
+        OptionsModel.instance.AlwaysOnTop = ! OptionsModel.instance.AlwaysOnTop; //Toggle Always on Top
+      }
+      private function handleRefresh(event:Event):void
+      {
+        instanceStack.emptyStack();
+        updatemodel.instance.refresh();
+      }
+      private function handleLogout(event:Event):void
+      {
+        instanceStack.handleBtnLogout(null);
+      }
+      private function handleAbout(event:Event):void
+      {
+        var winabout:winAbout = new winAbout();
+        PopUpManager.addPopUp(winabout, stacker.instanceStack);
+        PopUpManager.centerPopUp(winabout);
+      }
+
+
+      /**
+       * Function that should be called to cause the app to exit. You must call this instead of
+       * directly calling NativeApplication.nativeApplication.exit(), because the latter won't
+       * notify us that it's exiting!
+       */
+      public static function doExit(): void {
+        // Calling the application exit function doesn't actually dispatch an exiting event!
+        updatemodel.instance.dispose();
+        NativeApplication.nativeApplication.exit();
+      }
+
+      /**
+       * Handler for exiting from the system tray.
+       */
+      private function handleSysTrayExit(event: Event): void {
+        doExit();
+      }
+
+
+      /**
+       * Handler called when we're ready to set the system tray icon after loading it.
+       */
+      private function handleSysTrayIconComplete(event: Event): void {
+        _AppIcons[_AppIcons.length] = event.target.content;
+        if (_AppIcons.length >= 4)
+        {
+          setAppIcon();
+        }
+        else
+        {
+          Logger.instance.log("AppIconArray length: " + _AppIcons.length,Logger.SEVERITY_NORMAL);
+        }
+      }
+
+      private function setAppIcon():void
+      {
+          if (NativeApplication.supportsSystemTrayIcon) {
+            // Load the icon image. When it's complete, we'll assign it to the system tray icon.
+            var sysTrayIcon: SystemTrayIcon = NativeApplication.nativeApplication.icon as SystemTrayIcon;
+            sysTrayIcon.tooltip = StringConstants.APP_NAME;
+            sysTrayIcon.addEventListener(MouseEvent.CLICK, handleSysTrayRestore);
+          NativeApplication.nativeApplication.icon.bitmaps = _AppIcons;
+            sysTrayIcon.menu = sysTrayMenu;
+          }
+      }
+
+      static public function setAlwaysOnTop(ontop:Boolean = true):Boolean
+      {
+        var curstate:Boolean = vbxStacker.alwaysInFront; //store current state
+        vbxStacker.alwaysInFront = ontop; //set new value
+        Logger.instance.log("Set always on top to: " + ontop,Logger.SEVERITY_NORMAL);
+        return curstate; //return old value
+      }
+
+
+      /**
+       * Handler for restoring the application from the system tray.
+       */
+      private function handleSysTrayRestore(event: Event): void
+      {
+        //doSysTrayRestore();
+      }
+
+
+      /**
+       * Handler for log events. Currently, we only show log events in the UI if there's a
+       * catastrophic failure; other events just go to the log file in the Snackr data folder.
+       */
+      private function handleLogItem(event: LogEvent): void
+      {
+        if (event.severity == Logger.SEVERITY_SERIOUS)
+        {
+          Alert.show("Oops: A serious problem has occured.","Critical Failure!");
+        }
+      }
+
+      static public function get instanceStack():winTileStack
+      {
+        return vbxStacker;
+      }
+
+      static public function get cacheDir():File
+      {
+        return _cachedir;
+      }
+
+    ]]>
+  </mx:Script>
+</mx:WindowedApplication>

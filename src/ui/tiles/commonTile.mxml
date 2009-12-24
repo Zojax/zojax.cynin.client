@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="230" height="64" 
+	rollOver="handleRollOver(event)" rollOut="handleRollOut(event)" 
+	click="handleClick(event)" styleName="tile" creationComplete="inited()" 
+	xmlns:control="ui.controls.*" horizontalScrollPolicy="off" verticalScrollPolicy="off" >
+	<mx:Script>
+		<![CDATA[
+			import model.updates.RegularEvent;
+			import mx.events.PropertyChangeEvent;
+			import mx.formatters.DateFormatter;
+			import model.updates.updatemodel;
+			import mx.binding.utils.ChangeWatcher;
+			import model.logger.Logger;
+			import model.updates.updateitem;
+			
+			[Bindable] public var _item:updateitem = null;
+			[Bindable] private var _lastaction:String = "";
+			[Bindable] private var _actiontitle:String = "";
+			[Bindable] public var HasLoaded:Boolean = false;
+			
+			private var _isRolledOver:Boolean = false;
+			public var _isDelaySelected:Boolean = false;
+			public var _bgInvalid:Boolean = false;
+			[Bindable] private var _itemdate:String = "";
+			private var haserrored:Boolean = false;
+			
+			
+			private function inited():void
+			{
+				ChangeWatcher.watch(this,"Item",itemdate);
+				if (_item != null) itemdate(null);
+			}
+			
+			
+			private function handleRollOver(event: Event): void {
+				_isRolledOver = true;
+				_bgInvalid = true;
+				invalidateDisplayList();
+			}
+			
+			private function handleRollOut(event: Event): void {
+				_isRolledOver = false;
+				_bgInvalid = true;
+				invalidateDisplayList();
+			}
+			
+			override protected function updateDisplayList(unscaledWidth: Number, unscaledHeight: Number): void 
+			{
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+				
+				if (_bgInvalid) {
+					graphics.clear();
+
+					var gradientMatrix: Matrix = new Matrix();
+					if (_isRolledOver && (_item == updatemodel.instance.selectedItem || _isDelaySelected))
+					{
+						gradientMatrix.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
+						graphics.beginGradientFill(GradientType.LINEAR, [0x0F6BBA, 0x71B9F7], [1, 1], [0, 255], gradientMatrix);
+						graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+						graphics.endFill();
+					}
+					else if (_item == updatemodel.instance.selectedItem  || _isDelaySelected)
+					{
+						gradientMatrix.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
+						graphics.beginGradientFill(GradientType.LINEAR, [0x71B9F7, 0x0F6BBA], [1, 1], [0, 255], gradientMatrix);
+						graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+						graphics.endFill();
+					}
+					else if (_isRolledOver) 
+					{
+						gradientMatrix.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
+						graphics.beginGradientFill(GradientType.LINEAR, [0xCCCCCC, 0x555555], [0.5, 0.5], [0, 255], gradientMatrix);
+						graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+						graphics.endFill();
+					}
+					
+					_bgInvalid = false;				
+				}
+			}
+			
+			private function handleClick(event: Event): void 
+			{
+				//dispatchEvent(new TickerItemClickEvent(this, false));
+				Logger.instance.log("Item Clicked: " + this._item, Logger.SEVERITY_NORMAL);
+				dispatchEvent(new tileclickevent(this)); 
+			}
+			private function itemdate(event:Event):void
+			{
+				if (_item != null && _item.lastchangedate)
+				{
+					var _df:DateFormatter = new DateFormatter();
+					_df.formatString = "DD";
+					var _dayofmonth:String = _df.format(_item.lastchangedate);
+					_df.formatString = "MMM";
+					var _month:String = _df.format(_item.lastchangedate);
+					_df.formatString = "YY";
+					var _year:String = _df.format(_item.lastchangedate);
+					_df.formatString = "LL";
+					var _hours:String = _df.format(_item.lastchangedate);
+					_df.formatString = "NN";
+					var _minutes:String = _df.format(_item.lastchangedate);
+					_df.formatString = "A";
+					var _ampm:String = _df.format(_item.lastchangedate);
+					_itemdate =  _hours + ":" + _minutes + _ampm + " " +  _dayofmonth + "-" + _month + "-" + _year ;
+					_actiontitle = _item.ActionTitle
+					if (_item.changeruservo == null || _item.changeruservo.portrait_url == "")
+					{
+						haserrored = true;
+						HasLoaded = true;
+					}
+				}
+			} 
+			private function CheckHasLoaded():void
+			{
+				if ((imgAvatar.percentLoaded == 100 && imgTypeIcon.percentLoaded == 100) || haserrored == true)
+				{
+					HasLoaded = true;
+					updatemodel.instance.dispatchEvent(new RegularEvent(RegularEvent.TILE_LOADED));
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="lblTitle" text="{_item.title}" height="18" truncateToFit="true" styleName="TileTitle" alpha="0.75" left="80" top="10" width="143"/>
+	<mx:Image id="imgTypeIcon" width="16" height="16" source="{_item.typevo.typeiconurl}" left="64" top="10" complete="CheckHasLoaded()"/>
+	<control:RoundedImage id="imgAvatar" width="50" height="50" source="{_item.changeruservo.portrait_url}" cornerRadius="[5,5,5,5]" left="7" top="7" complete="CheckHasLoaded()" ioError="haserrored=true;CheckHasLoaded();"/>
+	<mx:Label id="lblCommentCount" text="{_item.commentcount}" height="20" alpha="0.5" width="40" styleName="TileCommentCount" visible="{_item.allowedcomments}" right="20" bottom="4"/>
+	<mx:Label x="10" y="24" width="142" height="24" text="{_item.description}"  visible="false"/>
+	<mx:Label id="lblModified" text="{_itemdate}" alpha="0.75" styleName="TileSmallText" height="15" left="64" bottom="6" width="120"/>
+	<mx:Label x="140" y="36" id="lblAuthor" text="{_item.creator}"  visible="false"/> 
+	<mx:Label text="{_actiontitle}" alpha="0.9" styleName="TileSmallText" height="16" left="64" top="27" width="159"/>
+	<mx:Image width="16" height="16" source="icons/comments.png"  visible="{_item.allowedcomments}" right="3" bottom="4" complete="CheckHasLoaded()"/>
+</mx:Canvas>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="0" height="0" xmlns:flexlib="flexlib.controls.*"
+	currentStateChange="handleStateChange(event)" 
+	visible="false" styleName="statuspopbg">
+	<mx:states>
+		<mx:State name="expanded">
+			<mx:SetProperty name="height" value="260"/>
+			<mx:SetProperty name="width" value="200"/>
+			<mx:SetProperty name="visible" value="true"/>
+			<mx:SetProperty target="{btnSet}" name="visible" value="true"/>
+		</mx:State>
+	</mx:states>
+	<mx:Script>
+		<![CDATA[
+			import mx.utils.StringUtil;
+			import model.updates.RegularEvent;
+			import mx.events.StateChangeEvent;
+			import model.updates.updatemodel;
+			private function handleKeyUp(event:KeyboardEvent):void
+			{
+				if (event.keyCode == Keyboard.ENTER && StringUtil.trim(ptaStatus.text).length > 0 /* && !event.altKey && !event.shiftKey && !event.ctrlKey*/)
+				{
+					setStatusMessage();
+				}
+			}
+			public function cancel():void
+			{
+				updatemodel.instance.dispatchEvent(new RegularEvent(RegularEvent.STATUS_INPUTTED));
+				currentState = "";
+				updatemodel.instance.getStatusMessage();
+			}
+			private function  handleTextInput(event:TextEvent):void
+			{
+				if (event.text == "\n") event.preventDefault();
+			}
+			private function setStatusMessage():void
+			{
+				updatemodel.instance.dispatchEvent(new RegularEvent(RegularEvent.STATUS_INPUTTED));
+				currentState = "";
+				updatemodel.instance.setStatusMessage(StringUtil.trim(ptaStatus.text));
+			}
+			private function handleStateChange(event:StateChangeEvent):void
+			{
+				handletextChanged(null);
+				if (event.newState == "expanded") stacker.instanceStack.focusManager.setFocus(ptaStatus);
+			}
+			private function handletextChanged(event:Event):void
+			{
+				btnSet.enabled = (StringUtil.trim(ptaStatus.text).length > 0)
+			}
+		]]>
+	</mx:Script>
+	<mx:Label text="What are you doing?" styleName="StatusTitle" top="10" left="23"/>
+	<mx:Label text="Enter your status message here:" styleName="StatusSubTitle" top="30" left="10"/>
+	<mx:Image source="/assets/icons/status_online.png" left="8" top="12"/>
+	<mx:TextArea id="ptaStatus" top="48" bottom="40" right="8" left="8" change="handletextChanged(event)" 
+		keyUp="handleKeyUp(event)" styleName="StatusInput" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+		maxChars="140" verticalCenter="auto" textInput="handleTextInput(event)">
+		<mx:filters>
+			<mx:DropShadowFilter
+			  distance="1"
+			  quality="5"
+			  blurX="10"
+			  blurY="10"
+			  alpha=".9"
+			  inner="true"
+			  angle="-90" />
+			</mx:filters>		
+	</mx:TextArea>
+	<mx:Label text="{ptaStatus.maxChars - ptaStatus.text.length}" left="10" bottom="5" alpha="0.5" styleName="CharCount"/>
+	<mx:Button label="Cancel" icon="@Embed(source='../../assets/icons/delete.png')" right="70" bottom="10" id="btnCancel" click="cancel()" styleName="StatusSet"/>
+	<mx:Button label="Set" icon="@Embed(source='../../assets/icons/accept.png')" right="10" bottom="10" id="btnSet" visible="false" click="setStatusMessage()" styleName="StatusSet"/>
+	<mx:filters>
+		<mx:DropShadowFilter
+		  distance="0"
+		  quality="5"
+		  blurX="8"
+		  blurY="8"
+		  alpha=".9"
+		  angle="90" />
+	</mx:filters>
+</mx:Canvas>
+

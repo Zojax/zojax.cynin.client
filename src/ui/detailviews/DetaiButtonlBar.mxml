@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="38" creationComplete="inited()">
+  <mx:Script>
+    <![CDATA[
+      import model.utils.Utils;
+      import model.updates.UpdateItem;
+      import model.logger.Logger;
+      import model.updates.updatemodel;
+      import model.comments.CommentEvent;
+
+      private function inited():void
+      {
+        updatemodel.instance.addEventListener(CommentEvent.IN_COMMENTING_MODE,handleInCommentingMode);
+        updatemodel.instance.addEventListener(CommentEvent.OUT_COMMENTING_MODE,handleInCommentingMode);
+        Logger.instance.log("DetailButtonBar inited." ,Logger.SEVERITY_NORMAL);
+
+      }
+
+      private function handleInCommentingMode(event:CommentEvent):void
+      {
+        Logger.instance.log("InCommentingMode: " + updatemodel.instance.InCommentingMode);
+        btnAddComment.enabled = ! updatemodel.instance.InCommentingMode;
+      }
+      public function handleAddMessageClicked():void
+      {
+        dispatchEvent(new CommentEvent(CommentEvent.USER_REQUESTED_REPLY));
+      }
+    ]]>
+  </mx:Script>
+  <mx:Button label="Add Message" id="btnAddComment"  styleName="AddComment" verticalCenter="0"
+    click="handleAddMessageClicked()" right="10" enabled="{UpdateItem(updatemodel.instance.selectedItem).allowedcomments}">
+    <mx:icon>@Embed(source='../../assets/icons/comment_add.png')</mx:icon>
+  </mx:Button>
+  <mx:Button label="Open" id="lbtnOpen" styleName="BottomLinkButtons" verticalCenter="0"
+    click="Utils.OpenBrowser( this,updatemodel.instance.selectedItem.absoluteurl,'Open : ' + updatemodel.instance.selectedItem.title);" left="10">
+    <mx:icon>@Embed(source='../../assets/icons/bullet_go.png')</mx:icon>
+  </mx:Button>
+  <mx:Button label="Edit" icon="@Embed(source='../../assets/icons/pencil_go.png')" id="lbtnEdit" styleName="BottomLinkButtons" verticalCenter="0"
+    click="Utils.OpenBrowser( this, updatemodel.instance.selectedItem.absoluteurl + '/context.html','Edit : ' + updatemodel.instance.selectedItem.title);" enabled="{updatemodel.instance.selectedItem.canEdit}" left="85"/>
+</mx:Canvas>

@@ -1,0 +1,1322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Window xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:detailview="ui.detailviews.*" title="Zojax" layout="absolute"
+  systemChrome="none" transparent="true" type="normal" minHeight="600" minWidth="800"
+  showTitleBar="false" showFlexChrome="false" styleName="maindock" showGripper="false"
+  showStatusBar="false" maximizable="false" resizable="false" xmlns:stackerview="ui.stackviews.*"
+  creationComplete="initcomplete(event)" resize="RedimWindow(event)"
+  addedToStage="RedimWindow(null)" xmlns:controls="ui.controls.*"
+  currentStateChange="handlePostStateChange(event)" keyUp="handleKeyUp(event)"
+  minimizable="true" deactivate="handleLoseFocus(event)" activate="handleGainFocus(event)"
+  >
+  <mx:states>
+    <mx:State name="collapsed">
+      <mx:SetProperty target="{cnvStackCanvas}" name="x" value="{- cnvStackCanvas.width}"/>
+    </mx:State>
+    <mx:State name="expanded">
+      <mx:SetProperty target="{cnvStackCanvas}" name="width" value="700"/>
+      <mx:SetProperty target="{dvwCommon}" name="x" value="{cnvStackHolder.x + cnvStackHolder.width}" />
+      <mx:SetProperty target="{dvwStatusMessage}" name="x" value="{cnvStackHolder.x + cnvStackHolder.width}" />
+    </mx:State>
+    <mx:State name="searchexpanded" basedOn="expanded">
+    </mx:State>
+    <mx:State name="empty">
+      <mx:SetProperty target="{vbxStack}" name="visible" value="false"/>
+      <!--<mx:SetProperty target="{cntSiteLogo}" name="visible" value="false"/>-->
+      <mx:SetProperty target="{cntPager}" name="visible" value="false"/>
+      <mx:SetProperty target="{txtStackerLabel}" name="visible" value="true"/>
+      <mx:SetProperty target="{cntSearch}" name="visible" value="false"/>
+      <mx:SetProperty target="{txtSiteTitle}" name="visible" value="false"/>
+    </mx:State>
+    <mx:State name="loggedout" basedOn="empty">
+      <mx:SetProperty target="{cntStatusHolder}" name="visible" value="false"/>
+      <mx:AddChild relativeTo="{cnvStackCanvas}" position="lastChild">
+        <stackerview:LoginView id="svwLoggedOut" left="10" right="10" verticalCenter="0"/>
+      </mx:AddChild>
+    </mx:State>
+    <mx:State name="authenticating" basedOn="empty">
+      <mx:SetProperty target="{cntStatusHolder}" name="visible" value="false"/>
+      <mx:AddChild relativeTo="{cnvStackCanvas}" position="lastChild">
+        <stackerview:Authenticating id="svwAuthenticating"  verticalCenter="0" horizontalCenter="0"/>
+      </mx:AddChild>
+    </mx:State>
+    <mx:State name="pagechanging" basedOn="empty">
+      <mx:AddChild relativeTo="{cnvStackHolder}" position="lastChild">
+        <stackerview:PageChanging id="svwPageChanging"  verticalCenter="0" horizontalCenter="0"/>
+      </mx:AddChild>
+      <!--<mx:SetProperty target="{cntSiteLogo}" name="visible" value="true"/>-->
+      <mx:SetProperty target="{txtSiteTitle}" name="visible" value="true"/>
+      <mx:SetProperty target="{cntPager}" name="visible" value="true"/>
+    </mx:State>
+    <mx:State name="searching">
+      <mx:SetProperty target="{vbxStack}" name="visible" value="false"/>
+      <mx:SetProperty target="{cntPager}" name="visible" value="false"/>
+      <mx:AddChild relativeTo="{cnvStackHolder}" position="lastChild">
+        <stackerview:PageChanging id="svwSearching"  verticalCenter="0" horizontalCenter="0"/>
+      </mx:AddChild>
+    </mx:State>
+    <mx:State name="searchresults">
+    </mx:State>
+    <mx:State name="loadingdetailview">
+      <mx:SetProperty target="{cnvStackCanvas}" name="width" value="700"/>
+      <mx:SetProperty target="{imgLoading}" name="x"/>
+      <mx:SetProperty target="{imgLoading}" name="visible" value="true" />
+      <mx:SetStyle target="{imgLoading}" name="verticalCenter" value="15"/>
+      <mx:SetStyle target="{imgLoading}" name="horizontalCenter" value="140"/>
+    </mx:State>
+    <mx:State name="pagechangingexpanded" basedOn="expanded">
+      <mx:SetProperty target="{vbxStack}" name="visible" value="false"/>
+      <mx:SetProperty target="{cntPager}" name="visible" value="true"/>
+      <mx:AddChild relativeTo="{cnvStackHolder}" position="lastChild">
+        <stackerview:PageChanging id="svwPageChangingExpanded"  verticalCenter="0" horizontalCenter="0"/>
+      </mx:AddChild>
+    </mx:State>
+  </mx:states>
+<!--<mx:transitions>
+    <mx:Transition id="trnsFromBaseToCollapsed" fromState="" toState="collapsed">
+      <mx:Parallel targets="{[cnvStackCanvas]}">
+        <mx:Move duration="300" />
+      </mx:Parallel>
+    </mx:Transition>
+    <mx:Transition id="trnsFromCollapsedToBase" fromState="collapsed" toState="">
+      <mx:Parallel targets="{[cnvStackCanvas]}">
+        <mx:Move duration="300"  />
+      </mx:Parallel>
+    </mx:Transition>
+    <mx:Transition id="trnsFromBaseToExpanded" fromState="" toState="loadingdetailview">
+      <mx:Sequence>
+        <mx:Resize duration="1500" effectEnd="_expandHasCompleted=true;SetExpandedState();" targets="{[cnvStackCanvas]}"/>
+      </mx:Sequence>
+    </mx:Transition>
+    <mx:Transition id="trnsFromExpandedToBase" fromState="expanded" toState="">
+      <mx:Sequence>
+        <mx:Resize duration="3000"  targets="{[cnvStackCanvas]}" />
+      </mx:Sequence>
+    </mx:Transition>
+  </mx:transitions> -->
+  <mx:Script>
+    <![CDATA[
+      import ui.tiles.StatuslogItemTile;
+      import model.versions.VersionEvent;
+      import com.abdulqabiz.crypto.Base64;
+      import model.updates.BaseItem;
+      import ui.tiles.BaseTile;
+      import mx.containers.TabNavigator;
+      import mx.effects.effectClasses.ResizeInstance;
+      import flexlib.controls.PromptingTextInput;
+      import flexlib.controls.PromptingTextArea;
+      import mx.managers.FocusManager;
+      import mx.controls.RichTextEditor;
+      import mx.controls.TextArea;
+      import mx.controls.TextInput;
+      import mx.managers.IFocusManagerComponent;
+      import mx.managers.IFocusManagerComplexComponent;
+      import mx.events.StateChangeEvent;
+      import model.updates.FetchQueueObject;
+      import model.updates.RegularEvent;
+      import model.updates.StringConstants;
+      import ui.tiles.SearchResultTileEvent;
+      import ui.tiles.SearchResultTile;
+      import model.updates.SearchItem;
+      import ui.controls.SearchEvent;
+      import model.updates.PageEvent;
+      import model.options.OptionsEvent;
+      import model.options.OptionsModel;
+      import model.updates.LoadingEvent;
+      import mx.effects.Fade;
+      import mx.events.EffectEvent;
+      import mx.validators.ValidationResult;
+      import mx.events.ResizeEvent;
+      import mx.managers.PopUpManager;
+      import model.updates.authevent;
+      import ui.tiles.tileclickevent;
+      import mx.formatters.NumberBaseRoundType;
+      import mx.formatters.NumberFormatter;
+      import mx.events.IndexChangedEvent;
+      import mx.effects.Rotate;
+      import mx.controls.Alert;
+      import model.logger.Logger;
+      import ui.tiles.UpdateTile;
+      import model.updates.updateitemevent;
+      import model.updates.UpdateItem;
+      import model.updates.updatemodel;
+
+      private var _toselectitem:UpdateItem = null;
+      private var _expandHasCompleted:Boolean = false;
+      private var _detailViewHasLoaded:Boolean = false;
+      private var _gotostate:String = "";
+
+      [Bindable] private var _searchedTerm:String = "";
+
+      [Bindable] private var _selectedTile:BaseTile = null;
+
+      private var owinOptions:winOptions = new winOptions();
+      private var _nextselectTile:BaseTile = null;
+      private var timSelectTile:Timer = new Timer(StringConstants.DEFAULT_SELECT_TILE_DURATION,1);
+
+      [Bindable] private var _stackerLabel:String = "";
+
+      public function initcomplete(event:Event):void
+      {
+        updatemodel.instance.addEventListener(updateitemevent.ADDED,handleAddNewTile);
+        updatemodel.instance.addEventListener(updateitemevent.UPDATED,handleAddNewTile);
+        updatemodel.instance.addEventListener(updateitemevent.SELECTED,handleNewSelection);
+        updatemodel.instance.addEventListener(updateitemevent.REMOVED,handleRemovedItem);
+
+        Logger.instance.log("Initing main window",Logger.SEVERITY_NORMAL);
+        updatemodel.instance.addEventListener(PageEvent.PAGE_CHANGING,handlePageChanging);
+        updatemodel.instance.addEventListener(PageEvent.PAGE_CHANGED,handlePageChanged);
+        updatemodel.instance.addEventListener(PageEvent.GET_RECENT_UPDATES_COMPLETED,handleRecentUpdatesCompleted);
+
+        updatemodel.instance.addEventListener(authevent.NEED_AUTH,handleNeedAuth);
+        updatemodel.instance.addEventListener(authevent.AUTH_SUCCEEDED,handleSuccessfulAuth);
+        updatemodel.instance.addEventListener(authevent.AUTH_FAILED,handleFailedAuth);
+        updatemodel.instance.addEventListener(authevent.AUTH_LOGGEDOUT,handleLoggedOut);
+        updatemodel.instance.addEventListener(authevent.AUTH_ATTEMPTING,handleLogonAttempting);
+
+        updatemodel.instance.addEventListener(SearchEvent.SEARCH_CANCELED,handleCancelSearch);
+        updatemodel.instance.addEventListener(SearchEvent.SEARCH_CHANGE,handleSearchTermChange);
+        updatemodel.instance.addEventListener(SearchEvent.SEARCH_RESULTS_ARRIVED,handleSearchResults);
+        updatemodel.instance.addEventListener(SearchEvent.SEARCH_BEGIN_TYPING,handleSearchBeginTyping);
+
+        updatemodel.instance.addEventListener(RegularEvent.IMAGE_DOWNLOAD_QUEUE_EMPTY,handleImageEmptyQueue);
+        updatemodel.instance.addEventListener(RegularEvent.OBJECT_FETCH_QUEUE_EMPTY,handleImageEmptyQueue);
+        updatemodel.instance.addEventListener(RegularEvent.TILE_LOADED,handleImageEmptyQueue);
+        updatemodel.instance.addEventListener(RegularEvent.SWITCH_TO_STATUS_INPUT,handleSwitchToStatusInput);
+        updatemodel.instance.addEventListener(RegularEvent.STATUS_INPUTTED,handleStatusInputted);
+
+        OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_COMPLETED,OptionsCompleted);
+        OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_SCREEN_CHANGED,handleScreenChanged);
+        OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_ALWAYS_ON_TOP_CHANGED,handleAlwaysOnTopChanged);
+
+        updatemodel.instance.addEventListener(VersionEvent.VERSION_NEW_AVAILABLE,handleNewVersionAvailable);
+
+
+        if (! updatemodel.instance.LoggedIn)
+        {
+          updatemodel.instance.SetupLogin(); //re do login after the main window is ready - because the updatemodel gets set up waaaay before the main window is ready usually.
+        }
+        dvwCommon.addEventListener(LoadingEvent.LOADED_DETAIL_VIEW,detailLoaded);
+        updatePageSize();
+        timSelectTile.addEventListener(TimerEvent.TIMER,handleTileSelectTimer)
+        updatemodel.instance.StartUpdateCheck();
+        Logger.instance.log("Inited main window",Logger.SEVERITY_NORMAL);
+      }
+
+      private function OptionsCompleted(event:OptionsEvent):void
+      {
+        PopUpManager.removePopUp(owinOptions);
+      }
+
+
+      private function handleAlwaysOnTopChanged(event:OptionsEvent):void
+      {
+        if (this.nativeWindow != null)
+        {
+          Logger.instance.log("AlwaysOnTop: was=" + this.alwaysInFront + ", isnow=" + OptionsModel.instance.AlwaysOnTop);
+          this.alwaysInFront = OptionsModel.instance.AlwaysOnTop;
+        }
+      }
+
+
+      private function handleScreenChanged(event:OptionsEvent):void
+      {
+        if (Screen.getScreensForRectangle(nativeWindow.bounds)[0] != getScreen())
+        {
+          RedimWindow(null);
+          emptyStack();
+          updatePageSize();
+          updatemodel.instance.getRecentUpdates();
+        }
+      }
+      private function getScreen():Screen
+      {
+        if (OptionsModel.instance.currentScreenIndex != -1 && OptionsModel.instance.currentScreenIndex < Screen.screens.length)
+        {
+          return Screen.screens[OptionsModel.instance.currentScreenIndex];
+        }
+        else
+        {
+          return Screen.mainScreen;
+        }
+      }
+
+      private function RedimWindow(event:ResizeEvent):void
+      {
+        if (this.nativeWindow != null && this.nativeWindow.displayState != NativeWindowDisplayState.MINIMIZED)
+        {
+          if (event != null) Logger.instance.log("Resize: oldheight=" + event.oldHeight + ", oldwidth=" + event.oldWidth + ",newwidth=" + this.width + ",newheight=" + this.height);
+          if (stage != null && stage.nativeWindow != null)
+          {
+            stage.nativeWindow.x = getScreen().bounds.x;
+            stage.nativeWindow.y = getScreen().bounds.y;
+            this.height = getScreen().bounds.height;
+            this.width = getScreen().bounds.width;
+            updatePageSize();
+          }
+        }
+        else
+        {
+          // Pre-minimize close detail view
+          if (updatemodel.instance.selectedItem != null)
+          {
+            unselectItem();
+          }
+        }
+        handleAlwaysOnTopChanged(null);
+      }
+
+      //Returns the number of stack items that can fit on one page of the stacker window
+      public function pagesize(isSearch:Boolean = false):int
+      {
+        var newsize:int = 0;
+        if (vbxStack != null && vbxStack.height > 0)
+        {
+          // Currently FLAT OUT ASSUMING that the tile height will be 64 pixels
+          if (isSearch == false)
+          {
+            newsize= new int((vbxStack.height) / StringConstants.UPDATE_TILE_SIZE );
+          }
+          else
+          {
+            newsize= new int((vbxStack.height) / StringConstants.SEARCH_TILE_SIZE );
+          }
+          Logger.instance.log("winHeight=" + this.height + ",stackHeight=" + vbxStack.height + "PageSize: " + newsize,Logger.SEVERITY_NORMAL);
+        }
+        else
+        {
+          newsize = StringConstants.MINIMUM_PAGESIZE;
+          Logger.instance.log("winHeight=" + this.height + "PageSize: " + newsize,Logger.SEVERITY_NORMAL);
+        }
+        return newsize;
+      }
+
+      private function updatePageSize():void
+      {
+        if (pagesize() != updatemodel.instance.PageSize)
+        {
+          Logger.instance.log("Updating pagesize: old=" + updatemodel.instance.PageSize + ", new=" + pagesize());
+          updatemodel.instance.PageSize = pagesize();
+        }
+        else
+        {
+          Logger.instance.log("Pagesize stayed the same: " + pagesize(),Logger.SEVERITY_DEBUG);
+        }
+      }
+
+      private function handleNeedAuth(event:authevent):void
+      {
+        currentState = "loggedout";
+      }
+
+      private function handleFailedAuth(event:authevent):void
+      {
+        handleNeedAuth(null);
+      }
+
+      private function handleLoggedOut(event:authevent):void
+      {
+        emptyStack();
+        _gotostate = "";
+        handleNeedAuth(null);
+      }
+      private function handleLogonAttempting(event:authevent):void
+      {
+        currentState = "authenticating";
+      }
+      private function handleSuccessfulAuth(event:authevent):void
+      {
+//              var o:winSSBAutoLogin = new winSSBAutoLogin();
+//              o.open(true);
+//              o.maximize();
+      }
+
+      private function handleAddNewTile(event: updateitemevent):void
+      {
+        AddNewTile(event.item);
+        if (updatemodel.instance.PageChanging == false && OptionsModel.instance.AutoShow == true
+        && currentState=="collapsed" && (event.item as UpdateItem ).lastchangeperformer != updatemodel.instance.username)
+        {
+          emptyStack();
+          updatemodel.instance.PageNumber = 1; // go to page 1
+          DoSwitchToBaseState();
+        }
+      }
+      private function AddNewTile(uItem:BaseItem):void
+      {
+        var newtile:BaseTile = FindTileByItemUID(uItem.itemuid);
+        if (newtile == null) //new tile
+        {
+          if (uItem.portal_type == StringConstants.TYPE_STATUSMESSAGE)
+          {
+            newtile = new StatuslogItemTile();
+          }
+          else
+          {
+            newtile = new UpdateTile();
+          }
+          newtile.Item = uItem;
+          newtile.addEventListener(tileclickevent.TILE_ITEM_CLICK,handletileselected);
+        }
+        else
+        {
+          newtile.Item = uItem;
+        }
+        if (vbxStack.contains(newtile))
+        {
+          var index:int = updatemodel.instance.getItemIndex(uItem)
+          if (index < vbxStack.getChildren().length)
+          {
+            vbxStack.setChildIndex(newtile,index);
+          }
+          Logger.instance.log("Updated tile with item: " + uItem,Logger.SEVERITY_DEBUG);
+        }
+        else
+        {
+          var newind:int = updatemodel.instance.getItemIndex(uItem);
+          if (newind > vbxStack.getChildren().length) newind = vbxStack.getChildren().length
+          vbxStack.addChildAt(newtile,newind);
+          Logger.instance.log("Added tile with item: " + uItem,Logger.SEVERITY_DEBUG);
+        }
+        if (updatemodel.instance.selectedItem != null && newtile.Item.itemuid == updatemodel.instance.selectedItem.itemuid)
+        {
+          _selectedTile = newtile;
+          newtile.isSelected = true;
+        }
+        invalidateTile(newtile);
+        RemoveExtraTiles();
+      }
+
+      private function RemoveExtraTiles():void
+      {
+        var matchsize:uint = pagesize(updatemodel.instance._searchCurrentTerm != "");
+        while( vbxStack.getChildren().length > matchsize)
+        {
+           vbxStack.removeChildAt(vbxStack.getChildren().length - 1);
+        }
+      }
+
+      private function FindTileByItemUID(uid:String):BaseTile
+      {
+        for each (var t:BaseTile in vbxStack.getChildren())
+        {
+          if (t.Item.itemuid == uid)
+          {
+            return t;
+          }
+        }
+        return null;
+      }
+
+
+      private function handleRemovedItem(event: updateitemevent):void
+      {
+        RemoveTileByItemUID(event.item.itemuid);
+      }
+      private function changeStateImmediately(newstate:String):void
+      {
+        // Do all sort of checks here to ensure that state does not change automagically when we are logged out.
+        // ALL state change MUST pass through this!
+        if (updatemodel.instance.LoggedIn == true || newstate == "collapsed")
+        {
+            if (! isFocusInSearch())
+            {
+              this.setFocus();
+            }
+            else
+            {
+              if (newstate == "expanded") newstate = "searchexpanded";
+            }
+            currentState = newstate;
+        }
+        else if (currentState != "loggedout")
+        {
+          currentState = "loggedout";
+        }
+      }
+      private function handlePageChanging(event:PageEvent):void
+      {
+        _selectedTile = null;
+        emptyStack();
+        if (updatemodel.instance.selectedItem != null)
+        {
+          changeStateImmediately("pagechangingexpanded")
+        }
+        else
+        {
+          changeStateImmediately("pagechanging")
+        }
+      }
+      private function handlePageChanged(event:PageEvent):void
+      {
+        LoadPageTiles();
+        if (updatemodel.instance.selectedItem == null)
+        {
+          DoSwitchToBaseState();
+        }
+        else
+        {
+          if (currentState != "expanded") changeStateImmediately("expanded");
+        }
+      }
+      private function handleImageEmptyQueue(event:RegularEvent):void
+      {
+        CheckAndSwitchToGotoState();
+      }
+      private function DoSwitchToBaseState():void
+      {
+        Logger.instance.log("Switching to base state.",Logger.SEVERITY_DEBUG);
+        _gotostate = "base";
+        changeStateImmediately("pagechanging");
+        CheckAndSwitchToGotoState();
+      }
+      private function DoSwitchToSearchResultsState():void
+      {
+        Logger.instance.log("Switching to search results state.",Logger.SEVERITY_DEBUG);
+        _gotostate = "searchresults";
+        changeStateImmediately("searching");
+        CheckAndSwitchToGotoState();
+      }
+      private function CheckAndSwitchToGotoState():void
+      {
+        if (_gotostate == "") return;
+        if (updatemodel.instance.FetchQueueLength > 0) return;
+        if (updatemodel.instance.DownloadCacheQueueLength > 0 ) return;
+        if (HaveAllTilesLoaded() == false) return;
+        if (updatemodel.instance.LoggedIn == false) return;
+        switch (_gotostate)
+        {
+          case "base":
+            changeStateImmediately("");
+            break;
+          case "searchresults":
+            changeStateImmediately("searchresults");
+            break;
+        }
+        _gotostate = "";
+        Logger.instance.log("Switched to Goto State:" + currentState);
+      }
+
+      private function HaveAllTilesLoaded():Boolean
+      {
+        for each (var obj:Object in vbxStack.getChildren())
+        {
+          if (obj is UpdateTile)
+          {
+            var utile:UpdateTile = obj as UpdateTile;
+            if (utile.HasLoaded == false) return false;
+          }
+          else if (obj is SearchResultTile)
+          {
+            var stile:SearchResultTile = obj as SearchResultTile;
+            if (stile.HasLoaded == false) return false;
+          }
+        }
+        return true;
+      }
+
+      private function handleRecentUpdatesCompleted(event:PageEvent):void
+      {
+        if (updatemodel.instance.CurrentPageItems.length > vbxStack.getChildren().length && vbxStack.getChildren().length < pagesize())
+        {
+          Logger.instance.log("Synchronizing Page size with page items: " + updatemodel.instance.CurrentPageItems.length + "v/s" + vbxStack.getChildren().length);
+          for each (var uitem:UpdateItem in updatemodel.instance.CurrentPageItems)
+          {
+            if (FindTileByItemUID(uitem.itemuid) == null  && vbxStack.getChildren().length < pagesize()) // we compare pagesize again because adding a new tile might have changed it.
+            {
+              AddNewTile(uitem);
+            }
+          }
+        }
+      }
+
+      private function LoadPageTiles():void
+      {
+        Logger.instance.log("Loading page with length: " + updatemodel.instance.CurrentPageItems.length);
+        for each (var uItem:UpdateItem in updatemodel.instance.CurrentPageItems)
+        {
+          AddNewTile(uItem);
+        }
+      }
+
+
+      private function RemoveTileByItemUID(uid:String):void
+      {
+        Logger.instance.log("Removing tile with item uid: " + uid, Logger.SEVERITY_NORMAL);
+        var t:UpdateTile = FindTileByItemUID(uid) as UpdateTile;
+        if (t != null) vbxStack.removeChild(t);
+      }
+
+      private function handletileselected(event:tileclickevent):void
+      {
+        invalidateSelectedTile();
+        if (updatemodel.instance.selectedItem != null && event.tile != null && updatemodel.instance.selectedItem.itemuid == event.tile.Item.itemuid)
+        {
+          //There's an item selected and The user clicked again on the same item, so let's close the detail view
+          updatemodel.instance.selectedItem = null;
+        }
+        else
+        {
+          //A new item was selected, so let's set it to be shown and expand.
+          updatemodel.instance.selectedItem = null;
+          updatemodel.instance.selectItemByUID(event.tile.Item.itemuid);
+          _selectedTile = event.tile;
+          invalidateSelectedTile();
+          if (!event.tile.Item is UpdateItem)
+          {
+            //updatemodel.instance.selectedItem = null;
+            updatemodel.instance.selectItemByUID(event.tile.Item.itemuid);
+          }
+          if (currentState != "loadingdetailview")
+          {
+            changeStateImmediately("loadingdetailview");
+          }
+        }
+      }
+      private function handleNewSelection(event:updateitemevent):void
+      {
+        if (event.item != null)
+        {
+          invalidateSelectedTile();
+          var toselect:BaseTile = FindTileByItemUID(event.item.itemuid) as BaseTile;
+          if (toselect != null)
+          {
+            _selectedTile = toselect ;
+            Logger.instance.log("Found update tile to select: " + _selectedTile);
+            _selectedTile.isSelected = true;
+            _nextselectTile = _selectedTile;
+            invalidateSelectedTile();
+          }
+        }
+        else
+        {
+          Logger.instance.log("Got null new selected item, emptying tiles.");
+          invalidateSelectedTile();
+          _selectedTile = null;
+          _nextselectTile = null;
+          changeStateImmediately("");
+        }
+      }
+      private function unselectItem():void
+      {
+        updatemodel.instance.selectedItem = null;
+        invalidateSelectedTile();
+        _selectedTile = null;
+      }
+      public function handletongueclick(event:Event):void
+      {
+        Logger.instance.log("Tongue clicked when state is: " +currentState,Logger.SEVERITY_NORMAL);
+        invalidateSelectedTile();
+        switch (currentState)
+        {
+          case "searchresults":
+            updatemodel.instance.cancelSearch();
+            changeStateImmediately("collapsed");
+          case null:
+          case "":
+            changeStateImmediately("collapsed");
+            unselectItem();
+            break;
+          case "collapsed":
+            changeStateImmediately("");
+            break;
+          case "searchexpanded":
+          case "expanded":
+            unselectItem();
+            break;
+          case "loadingdetailview":
+            unselectItem();
+            break;
+          default: //Since we don't know what the current state is, we assume it was base state and thus go to collapsed
+            changeStateImmediately("collapsed");
+            unselectItem();
+            trace ("Was UNKNOWN state:" + currentState);
+            break;
+        }
+      }
+
+
+      private function DoCollapse(event:EffectEvent):void
+      {
+        changeStateImmediately("");
+      }
+
+      private function setToSelectItem():void
+      {
+        updatemodel.instance.selectedItem = _toselectitem;
+        invalidateSelectedTile()
+      }
+
+      private function invalidateTile(tile:BaseTile):void
+      {
+        if (tile is StatuslogItemTile)
+        {
+          var sliTile:StatuslogItemTile = tile as StatuslogItemTile;
+          sliTile._bgInvalid = true;
+          sliTile.invalidateDisplayList();
+          Logger.instance.log("Invalidated StatuslogItemTile:" + sliTile,Logger.SEVERITY_DEBUG);
+        }
+        else
+        {
+          tile._bgInvalid = true;
+          tile.invalidateDisplayList();
+          Logger.instance.log("Invalidated BaseTile:" + tile,Logger.SEVERITY_DEBUG);
+        }
+      }
+      private function invalidateSelectedTile():void
+      {
+        if (_selectedTile == null) return;
+        if (updatemodel.instance.selectedItem != null && _selectedTile.Item.itemuid == updatemodel.instance.selectedItem.itemuid )
+        {
+          _selectedTile.isSelected = true;
+        }
+        else
+        {
+          _selectedTile.isSelected = false;
+        }
+        invalidateTile(_selectedTile);
+        Logger.instance.log("Painted _selectedTile to: " + _selectedTile.isSelected,Logger.SEVERITY_DEBUG);
+      }
+
+      private function detailLoaded(event:LoadingEvent):void
+      {
+        if (currentState != "searchresults")
+        {
+          changeStateImmediately("expanded");
+        }
+        else
+        {
+          changeStateImmediately("searchexpanded");
+        }
+
+      }
+
+      public function handleBtnLogout(event:Event):void
+      {
+        //svwLoggedOut.LogoutReason = "userinitiated";
+        updatemodel.instance.LogOut();
+      }
+
+      public function handleBtnOptions(event:Event):void
+      {
+        PopUpManager.addPopUp(owinOptions,this,true);
+        PopUpManager.centerPopUp(owinOptions);
+      }
+
+
+
+      private function handleSearchTermChange(event:SearchEvent):void
+      {
+        if (updatemodel.instance._searchCurrentTerm != "")
+        {
+          changeStateImmediately("searching");
+          _stackerLabel = "Searching for: " + event.searchterm + "...";
+        }
+      }
+      private function removeAllSearchTiles():void
+      {
+        for each (var obj:Object in vbxStack.getChildren())
+        {
+          if (obj is SearchResultTile)
+          {
+            vbxStack.removeChild(obj as SearchResultTile);
+          }
+        }
+      }
+      private function handleCancelSearch(event:SearchEvent):void
+      {
+        removeAllSearchTiles();
+        updatemodel.instance.selectedItem = null;
+        _selectedTile = null;
+        DoSwitchToBaseState();
+        if (updatemodel.instance.CurrentPageItems.length > 0 && vbxStack.getChildren().length < updatemodel.instance.CurrentPageItems.length)
+        {
+          var newtile:UpdateTile = null;
+          for each (var ui:UpdateItem in updatemodel.instance.CurrentPageItems)
+          {
+            newtile = new UpdateTile();
+            newtile.Item = ui;
+            newtile.addEventListener(tileclickevent.TILE_ITEM_CLICK,handletileselected);
+            vbxStack.addChild(newtile);
+          }
+        }
+        updatemodel.instance.getRecentUpdates();
+      }
+      public function emptyStack():void
+      {
+        for each (var obj:BaseTile in vbxStack.getChildren())
+        {
+          obj.dispose();
+        }
+        vbxStack.removeAllChildren();
+      }
+      private function handleSearchResults(event:SearchEvent):void
+      {
+        var newtile:SearchResultTile = null;
+        emptyStack();
+        for each (var si:SearchItem in updatemodel.instance.CurrentSearchItems)
+        {
+          newtile = new SearchResultTile();
+          newtile.Item = si;
+          newtile.addEventListener(tileclickevent.TILE_ITEM_CLICK,handletileselected);
+          vbxStack.addChild(newtile);
+        }
+        DoSwitchToSearchResultsState();
+
+      }
+      private function handleSearchBeginTyping(event:SearchEvent):void
+      {
+        changeStateImmediately("searching");
+      }
+      private function handleBtnMenu():void
+      {
+        var menu:NativeMenu = stacker.sysTrayMenu;
+        if (menu != null) menu.display (this.stage, btnMenu.x + cnvStackHolder.x + cnvStackCanvas.x -10, btnMenu.y + cnvStackHolder.y + cnvStackCanvas.y + 25);
+      }
+
+      public function handleShowHide():void
+      {
+        var mnui:NativeMenuItem = stacker.sysTrayMenu.getItemByName("showhide");
+        switch (currentState)
+        {
+          case "collapsed":
+          case "searchexpanded":
+          case "expanded":
+            changeStateImmediately("");
+        }
+      }
+      private function handlePostStateChange(event:StateChangeEvent):void
+      {
+        Logger.instance.log("NewState: " + event.newState + ", OldState: " + event.oldState + ", selectedTile = " + _selectedTile );
+        invalidateSelectedTile();
+        var mnuiShowHide:NativeMenuItem = stacker.sysTrayMenu.getItemByName("showhide");
+        var mnuiLogout:NativeMenuItem = stacker.sysTrayMenu.getItemByName("logout");
+
+        switch (event.newState)
+        {
+          case "collapsed":
+            mnuiShowHide.label = "Show " + StringConstants.APP_NAME;
+            mnuiShowHide.enabled=true;
+            mnuiLogout.label = "Logout: " + updatemodel.instance.username;
+            break;
+          case "searchexpanded":
+          case "expanded":
+            mnuiShowHide.label = "Collapse " + StringConstants.APP_NAME;
+            mnuiShowHide.enabled=true;
+            mnuiLogout.label = "Logout: " + updatemodel.instance.username;
+            mnuiLogout.enabled = true;
+            break;
+          case "authenticating":
+            mnuiShowHide.label = StringConstants.APP_NAME + " is logging in...";
+            mnuiShowHide.enabled=false;
+            mnuiLogout.label = "Logging in..."
+            mnuiLogout.enabled = false;
+            break;
+          case "loadingdetailview":
+          case "pagechanging":
+          case "pagechangingexpanded":
+            mnuiShowHide.label = StringConstants.APP_NAME + " is fetching data...";
+            mnuiShowHide.enabled=false;
+            mnuiLogout.label = "Logout: " + updatemodel.instance.username;
+            mnuiLogout.enabled = true;
+            break;
+          case "searchresults":
+            mnuiShowHide.label = StringConstants.APP_NAME;
+            mnuiShowHide.enabled=false;
+            mnuiLogout.label = "Logout: " + updatemodel.instance.username;
+            mnuiLogout.enabled = true;
+            break;
+          case "":
+            mnuiShowHide.label = "Hide " + StringConstants.APP_NAME;
+            mnuiShowHide.enabled=true;
+            mnuiLogout.label = "Logout: " + updatemodel.instance.username;
+            mnuiLogout.enabled = true;
+            break;
+          case "loggedout":
+            mnuiLogout.label = ""; //"Please log in."
+            mnuiLogout.enabled = false;
+            break;
+        }
+        UpdateStackerLabel(event.newState);
+      }
+      private function UpdateStackerLabel(newstate:String):void
+      {
+        switch (newstate)
+        {
+          case "searchexpanded":
+            _stackerLabel=updatemodel.instance._totalUpdateItems +  ' results for: ' + updatemodel.instance._searchCurrentTerm;
+            break;
+          case "loggedout":
+            _stackerLabel=""; //"Please log in:"
+            break;
+          case "authenticating":
+            _stackerLabel="Authenticating...";
+            break;
+          case "loadingdetailview":
+          case "pagechanging":
+          case "pagechangingexpanded":
+            _stackerLabel="Fetching Data...";
+            break;
+          case "searching":
+            _stackerLabel="Searching...";
+            break;
+          case "searchresults":
+            _stackerLabel = updatemodel.instance._totalUpdateItems +  ' results for: ' + updatemodel.instance._searchCurrentTerm;
+            break;
+          default:
+            _stackerLabel = 'Activity Stream: ' + updatemodel.instance._totalUpdateItems + ' items';
+            break;
+        }
+      }
+      private function FocusSearch():void
+      {
+        cntSearch.txtSearch.setFocus();
+      }
+      private function isFocusInTextField():Boolean
+      {
+        var iobj:IFocusManagerComponent =  focusManager.getFocus();
+
+        if (iobj != null && (iobj is TextInput || iobj is TextArea || iobj is PromptingTextArea || iobj is PromptingTextInput || iobj is RichTextEditor) )
+        {
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+      private function isFocusInSearch():Boolean
+      {
+        if (isFocusInTextField())
+        {
+          var iobj:IFocusManagerComponent =  focusManager.getFocus();
+          if (iobj is PromptingTextInput)
+          {
+            var txtS:PromptingTextInput = iobj as PromptingTextInput;
+            if (txtS == cntSearch.txtSearch)
+            {
+              return true;
+            }
+            else
+            {
+              return false;
+            }
+          }
+        }
+        return false;
+      }
+      private function isFocusInStatus():Boolean
+      {
+        if (isFocusInTextField())
+        {
+          var iobj:IFocusManagerComponent =  focusManager.getFocus();
+          if (iobj is PromptingTextArea)
+          {
+            var txtS:PromptingTextArea = iobj as PromptingTextArea;
+            if (txtS == cntStatusHolder.cntStatusInput.ptaStatus)
+            {
+              return true;
+            }
+            else
+            {
+              return false;
+            }
+          }
+        }
+        return false;
+      }
+      private function selectNextItem():void
+      {
+        Logger.instance.log("Select next");
+
+        if (vbxStack.getChildren().length > 0)
+        {
+          var stoSelect:BaseTile = _nextselectTile;
+          if (stoSelect == null)
+          {
+            stoSelect = vbxStack.getChildAt(0) as BaseTile ; //first tile
+          }
+          else
+          {
+            //get next tile
+            try
+            {
+              var ind:int = vbxStack.getChildIndex(stoSelect);
+              if (ind >= 0 && ind < (vbxStack.getChildren().length - 1))
+              {
+                stoSelect = vbxStack.getChildAt(ind + 1) as BaseTile ;
+              }
+              else
+              {
+                stoSelect = vbxStack.getChildAt(0) as BaseTile ;
+              }
+              //else this is the last tile, go to next page and select first tile !?!?!
+            }
+            catch (e:Error)
+            {
+              stoSelect = vbxStack.getChildAt(0) as BaseTile ; //first tile
+            }
+          }
+          if (stoSelect != _nextselectTile)
+          {
+            delayedChangedTile(stoSelect);
+          }
+        }
+      }
+
+      private function selectFirstItem():void
+      {
+        var stoSelect:BaseTile = vbxStack.getChildAt(0 ) as BaseTile
+        delayedChangedTile(stoSelect);
+      }
+
+      private function selectLastItem():void
+      {
+        var stoSelect:BaseTile = vbxStack.getChildAt(vbxStack.getChildren().length - 1 ) as BaseTile
+        delayedChangedTile(stoSelect);
+      }
+
+      private function selectPreviousItem():void
+      {
+        Logger.instance.log("Select Previous");
+
+        if (vbxStack.getChildren().length > 0 ) //We have search results else, we'll have
+        {
+          var stoSelect:BaseTile = _nextselectTile;
+          if (stoSelect == null)
+          {
+            stoSelect = vbxStack.getChildAt(vbxStack.getChildren().length - 1 ) as BaseTile; //first tile
+          }
+          else
+          {
+            try
+            {
+              //get prev tile
+              var ind:int = vbxStack.getChildIndex(stoSelect);
+              if (ind > 0 && ind <= (vbxStack.getChildren().length - 1))
+              {
+                stoSelect = vbxStack.getChildAt(ind - 1)  as BaseTile;
+              }
+              else
+              {
+                stoSelect = vbxStack.getChildAt(vbxStack.getChildren().length - 1) as BaseTile;
+              }
+              //else this is the last tile, go to next page and select last tile !?!?!
+            }
+            catch (e:Error)
+            {
+              stoSelect = vbxStack.getChildAt(vbxStack.getChildren().length - 1) as BaseTile; //first tile
+            }
+          }
+          if (stoSelect != _nextselectTile)
+          {
+            delayedChangedTile(stoSelect);
+          }
+        }
+      }
+      private function delayedChangedTile(tile:BaseTile):void
+      {
+        timSelectTile.reset();
+        colorTileUnselected(_nextselectTile)
+        _nextselectTile = tile;
+        colorTileSelected(_nextselectTile);
+        timSelectTile.start();
+      }
+      private function colorTileUnselected(ctile:BaseTile):void
+      {
+        if (ctile != null)
+        {
+            ctile.isSelected = false;
+            ctile._bgInvalid = true;
+            ctile.invalidateDisplayList();
+        }
+      }
+      private function colorTileSelected(ctile:BaseTile):void
+      {
+        if (ctile != null)
+        {
+            ctile.isSelected = true;
+            ctile._bgInvalid = true;
+            ctile.invalidateDisplayList();
+        }
+      }
+      private function handleTileSelectTimer(event:TimerEvent):void
+      {
+        if (_nextselectTile != null)
+        {
+          handletileselected(new tileclickevent(_nextselectTile as BaseTile));
+        }
+      }
+      private function SwitchDetailViewTabs():void
+      {
+        if (dvwCommon != null && dvwCommon.tbnMain != null)
+        {
+          var tbn:TabNavigator = dvwCommon.tbnMain;
+          if (tbn.selectedIndex +1 == tbn.getChildren().length)
+          {
+            tbn.selectedIndex = 0 ;
+          }
+          else
+          {
+            tbn.selectedIndex ++ ;
+          }
+        }
+      }
+      private function handleKeyUp(event:KeyboardEvent):void
+      {
+        ///////////////////////////SEARCH //////////////////////////////
+        if (event.keyCode == Keyboard.F && event.ctrlKey)
+        {
+          FocusSearch();
+          return;
+        }
+        if (event.keyCode == Keyboard.F3 )
+        {
+          FocusSearch();
+          return;
+        }
+        if (event.keyCode == Keyboard.SLASH && !isFocusInTextField())
+        {
+          FocusSearch();
+          return;
+        }
+        ///////////////////////////SEARCH //////////////////////////////
+
+        ////////////////////////////// Escape ////////////////////////
+        if (event.keyCode == Keyboard.ESCAPE)
+        {
+          if (cntPager.currentState == "pageedit")
+          {
+            cntPager.currentState = "";
+            return;
+          }
+          if (updatemodel.instance._searchCurrentTerm != "" || isFocusInSearch())
+          {
+            updatemodel.instance.cancelSearch();
+            this.setFocus();
+            return;
+          }
+          if (isFocusInStatus() || cntStatusHolder.cntStatusInput.visible == true)
+          {
+            cntStatusHolder.cntStatusInput.cancel();
+            this.setFocus();
+            return;
+          }
+          if (currentState == "expanded" || currentState == "searchexpanded")
+          {
+            unselectItem();
+            changeStateImmediately("");
+            return;
+          }
+          if (currentState == "")
+          {
+            changeStateImmediately("collapsed");
+            return;
+          }
+        }
+        ////////////////////////////// Escape ////////////////////////
+
+        ////////////////////// PAGE NAVIGATION /////////////////////////
+        if (event.keyCode == Keyboard.PAGE_DOWN)
+        {
+          updatemodel.instance.incrementPageNumber();
+          return;
+        }
+        if (event.keyCode == Keyboard.PAGE_UP)
+        {
+          updatemodel.instance.decrementPageNumber();
+          return;
+        }
+        if (event.keyCode == Keyboard.END && event.ctrlKey && !isFocusInTextField())
+        {
+          updatemodel.instance.PageNumber = updatemodel.instance.PageCount;
+          return;
+        }
+        if (event.keyCode == Keyboard.HOME && event.ctrlKey && !isFocusInTextField())
+        {
+          updatemodel.instance.PageNumber = 1;
+          return;
+        }
+        ////////////////////// PAGE NAVIGATION /////////////////////////
+
+        ////////////////////// Item Navigation ////////////////////////
+        if (event.keyCode == Keyboard.UP)
+        {
+          if (!isFocusInTextField() || isFocusInSearch())
+          {
+            selectPreviousItem();
+          }
+          return;
+        }
+        if (event.keyCode == Keyboard.DOWN)
+        {
+          if (!isFocusInTextField() || isFocusInSearch())
+          {
+            selectNextItem();
+            return;
+          }
+        }
+        if (event.keyCode == Keyboard.HOME && ! event.ctrlKey)
+        {
+          if (!isFocusInTextField() || isFocusInSearch())
+          {
+            selectFirstItem();
+            return;
+          }
+        }
+        if (event.keyCode == Keyboard.END && ! event.ctrlKey)
+        {
+          if (!isFocusInTextField() || isFocusInSearch())
+          {
+            selectLastItem();
+            return;
+          }
+        }
+
+        ////////////////////// Item Navigation ////////////////////////
+        ///////////////////// Detail View Tab navigation /////////////
+        if (event.keyCode == Keyboard.I && event.ctrlKey && (currentState == "expanded" || currentState == "searchexpanded"))
+        {
+          SwitchDetailViewTabs();
+          return;
+        }
+        ///////////////////// Detail View Tab navigation /////////////
+        ///////////////////// Messaging  /////////////
+        if (event.keyCode == Keyboard.M && event.ctrlKey && updatemodel.instance.selectedItem != null && dvwCommon.dvwBar.btnAddComment.enabled)
+        {
+          dvwCommon.dvwBar.handleAddMessageClicked();
+          return;
+        }
+        ///////////////////// Messaging  /////////////
+        ///////////////////// Refresh  ////////////////////////////////
+        if (event.keyCode == Keyboard.F5 &&event.ctrlKey)
+        {
+          updatemodel.instance.clearCache();
+          return;
+        }
+        if (event.keyCode == Keyboard.F5 && !event.ctrlKey && !event.altKey && !event.shiftKey)
+        {
+          updatemodel.instance.refresh();
+        }
+        ///////////////////// Refresh  ////////////////////////////////
+        ///////////////////// AOT  ////////////////////////////////
+        if (event.keyCode == Keyboard.T && event.ctrlKey)
+        {
+          OptionsModel.instance.AlwaysOnTop = !OptionsModel.instance.AlwaysOnTop;
+        }
+        ///////////////////// AOT  ////////////////////////////////
+
+        //Logger.instance.log("KeyUp:" + event.charCode); // Will trace typed keys.
+      }
+
+///////////////////////////////////////////////////////////Version Checking /////////////////////////////////////////////////////////////////
+      private function handleNewVersionAvailable(event:VersionEvent):void
+      {
+        var owNewVersion:winUpdateAvailable = new winUpdateAvailable();
+        owNewVersion.voVersion = event.voUpdate;
+        PopUpManager.addPopUp(owNewVersion,this,true);
+        PopUpManager.centerPopUp(owNewVersion);
+
+      }
+///////////////////////////////////////////////////////////Version Checking /////////////////////////////////////////////////////////////////
+      private function handleSwitchToStatusInput(event:RegularEvent):void
+      {
+        Logger.instance.log("Changing to Status Input");
+        cntStatusHolder.cntStatusInput.ptaStatus.text = "";
+        cntStatusHolder.currentState="inputting";
+        cntStatusHolder.cntStatusInput.currentState="expanded";
+      }
+      private function handleStatusInputted(event:RegularEvent):void
+      {
+        cntStatusHolder.currentState="";
+      }
+
+      private function handleLoseFocus(event:Event):void
+      {
+        cnvStackCanvas.alpha=0.7;
+        btnTongue.alpha = cnvStackCanvas.alpha
+      }
+      private function handleGainFocus(event:Event):void
+      {
+        cnvStackCanvas.alpha = 1.0;
+        btnTongue.alpha = cnvStackCanvas.alpha
+      }
+
+    ]]>
+  </mx:Script>
+    <mx:Style source="../styles/skin1/style.css" />
+
+    <mx:Canvas width="250" styleName="dockbg"  horizontalScrollPolicy="off" verticalScrollPolicy="off" bottom="40"
+      top="40" x="-10" id="cnvStackCanvas" clipContent="false">
+      <!--<controls:SiteLogo SiteURL="{updatemodel.instance.SiteLogoUrl}" id="cntSiteLogo"
+        linkURL="{updatemodel.instance.SiteURL}" top="-15" left="20" height="50"/>-->
+      <mx:Canvas id="cnvStackHolder" bottom="87" left="10" horizontalScrollPolicy="off" verticalScrollPolicy="off" top="5" width="230">
+        <mx:Label left="22" top="30" text="{updatemodel.instance.SiteTitle}"
+          id="txtSiteTitle" styleName="SiteTitleText" width="200" textAlign="left" alpha="0.5"/>
+        <mx:Button id="btnMenu" click="handleBtnMenu()" useHandCursor="true" buttonMode="true" styleName="MenuBtn" right="6" top="5"/>
+        <controls:Search left="5" right="5" id="cntSearch" top="50"/>
+        <mx:Text id="txtStackerLabel" text="{_stackerLabel}" top="75" left="10" styleName="StackerTitleTxt"  alpha=".8" right="5" truncateToFit="true" height="20"/>
+        <mx:VBox id="vbxStack" bottom="32" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+            styleName="vbxStack" top="92" right="0"/>
+        <controls:Pager left="5" right="5" bottom="5" id="cntPager" height="24"/>
+      </mx:Canvas>
+      <controls:StatusHolder id="cntStatusHolder" styleName="statusbg" height="84" left="3"  bottom="3" width="244" clipContent="false" />
+      <detailview:commondetailview id="dvwCommon"
+        x="{this.x - this.width}"
+        width="450" visible="{updatemodel.instance.selectedItem.portal_type != StringConstants.TYPE_STATUSMESSAGE}"  top="10" bottom="10"/>
+      <detailview:StatuslogItemDetailView id="dvwStatusMessage"
+        x="{this.x - this.width}"
+        width="450" visible="{updatemodel.instance.selectedItem.portal_type == StringConstants.TYPE_STATUSMESSAGE}"  top="10" bottom="10"/>
+      <mx:Image x="{this.x - this.width}" id="imgLoading" width="30" height="30" visible="false" source="styles/skin1/spinner.swf"/>
+    </mx:Canvas>
+    <mx:Button click="handletongueclick(event)" styleName="btnTongue" id="btnTongue"
+      useHandCursor="true" buttonMode="true" verticalCenter="0" left="{cnvStackCanvas.x + cnvStackCanvas.width}" />
+    <mx:filters>
+      <mx:DropShadowFilter
+        distance="0"
+        quality="5"
+        blurX="8"
+        blurY="8"
+        alpha=".7"
+        angle="180" />
+      </mx:filters>
+</mx:Window>

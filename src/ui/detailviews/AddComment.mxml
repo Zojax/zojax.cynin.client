@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" height="0" 
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" creationComplete="inited()" xmlns:ns1="ui.controls.*">
+	<mx:states>
+		<mx:State name="editing">
+			<mx:SetProperty target="{uav}" name="visible" value="true"/>
+			<mx:SetProperty target="{taCommentBody}" name="visible" value="true"/>
+			<mx:SetProperty target="{label1}" name="visible" value="true"/>
+			<mx:SetProperty target="{txtSubject}" name="visible" value="true"/>
+			<mx:SetProperty target="{label2}" name="visible" value="true"/>
+			<mx:SetProperty name="height" value="310"/>
+			<mx:SetProperty name="minHeight" value="298"/>
+			<mx:SetProperty target="{btnSubmit}" name="visible" value="true"/>
+			<mx:SetProperty target="{btnCancel}" name="visible" value="true"/>
+			<mx:SetProperty name="width" value="100%"/>
+			<mx:SetStyle target="{btnSubmit}" name="icon" value="@Embed(source='../../assets/icons/accept.png')"/>
+			<mx:SetStyle target="{btnCancel}" name="icon" value="@Embed(source='../../assets/icons/delete.png')"/>
+		</mx:State>
+	</mx:states>
+<mx:Script>
+	<![CDATA[
+		import model.comments.CommentEvent;
+		import mx.effects.easing.Circular;
+		import mx.effects.easing.Linear;
+		import mx.binding.utils.ChangeWatcher;
+		import mx.messaging.AbstractConsumer;
+		import model.logger.Logger;
+		import model.updates.updatemodel;
+		import model.updates.UpdateItem;
+		import model.comments.CommentInfo;
+
+		import mx.collections.ItemResponder;
+		import mx.rpc.AsyncToken;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		
+					
+	
+		[Bindable] private var _validToSubmit:Boolean = false;
+		[Bindable] public var _comment:CommentInfo= null;
+		[Bindable] public var _context:UpdateItem = null;
+		
+		[Bindable] public var _suggestedSubject:String = "";
+		
+		private function inited():void
+		{
+			ChangeWatcher.watch(this,"_comment",commentbinded);
+			ChangeWatcher.watch(this,"_context",contextbinded);
+			if (_comment != null || _context != null)
+			{
+				commentbinded(null);
+			}
+		}
+		
+		private function commentbinded(event:Event):void
+		{
+			if (_comment != null)
+			{
+				_suggestedSubject = "Re: " + _comment.title;
+			}
+			taCommentBody.text = "";
+		}
+		
+		private function contextbinded(event:Event):void
+		{
+			if (_context != null)
+			{
+				_comment= null;
+				_suggestedSubject = "Re: " + _context.title;
+			}
+			else
+			{
+				_suggestedSubject = "";
+			}
+			taCommentBody.text = "";
+		}
+
+	private function textChanged(event:Event):void
+	{
+			if (txtSubject.text.length > 0 && taCommentBody.text.length > 0)
+			{
+				_validToSubmit = true;
+			} 
+			else
+			{
+				_validToSubmit = false;
+			}
+	}
+	private function SubmitHandler():void
+	{ 
+		if (_comment != null)
+		{
+			updatemodel.instance._xserver.addNewComment(_context.itemuid,txtSubject.text,taCommentBody.text,_comment.commentid).addResponder(new ItemResponder(handleAddCommentResponse, handleAddCommentFaultResponse));
+		}
+		else
+		{
+			updatemodel.instance._xserver.addNewComment(_context.itemuid,txtSubject.text,taCommentBody.text).addResponder(new ItemResponder(handleAddCommentResponse, handleAddCommentFaultResponse));
+		}
+		currentState = "";
+	}
+	
+	public function handleAddCommentResponse(event:ResultEvent, token : AsyncToken = null):void
+	{
+        var newid:String = event.result.toString();
+        dispatchEvent(new CommentEvent(CommentEvent.ADD_COMMENT_SUCCEEDED)); //THIS IS WRONG!!! Instead we should create a new, get single comment detail function on the server side and only fetch that item. That too, lazily. We should show the comment item immediately.
+        updatemodel.instance.InCommentingMode = false;
+        taCommentBody.text = ""; 
+        //updatemodel.instance.refreshItem(_context);
+	}
+	public function handleAddCommentFaultResponse(event:FaultEvent, token : AsyncToken = null):void
+	{
+        updatemodel.instance.InCommentingMode = false;
+        Logger.instance.log("Could not add new Comment: " + event.fault.message, Logger.SEVERITY_SERIOUS);
+	}
+	public function CancelCommentEdit():void
+	{
+		taCommentBody.text = ""; // Just for the die-hard fans we ensure clear out of text on cancel click. Otherwise it'll come back if the user clicks on the same reply button, again.
+		updatemodel.instance.InCommentingMode = false;
+		currentState=''
+	}
+	override protected function updateDisplayList(unscaledWidth: Number, unscaledHeight: Number): void 
+	{
+		super.updateDisplayList(unscaledWidth, unscaledHeight);
+		
+		graphics.clear();
+
+		var gradientMatrix: Matrix = new Matrix();
+		gradientMatrix.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
+		graphics.beginGradientFill(GradientType.LINEAR, [0x444444, 0x1f1f1f], [1, 1], [0, 255], gradientMatrix);
+		graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+		graphics.endFill();
+	}
+
+	]]>
+</mx:Script>
+	<ns1:UserAvatar right="10" top="5" visible="false" id="uav"/>
+	<mx:TextArea top="80" left="10" right="10" bottom="40" id="taCommentBody" wordWrap="true" 
+		editable="true" enabled="true" change="textChanged(event)" visible="false" styleName="CommentInputBody">
+		<mx:filters>
+			<mx:DropShadowFilter
+			  distance="1"
+			  quality="5"
+			  blurX="10"
+			  blurY="10"
+			  alpha=".9"
+			  inner="true"
+			  angle="-90" />
+			</mx:filters>		
+	</mx:TextArea>
+	<mx:Label left="10" top="56" text="Body:" visible="false" id="label1" styleName="CommentBoxLabels" alpha="0.3"/>
+	<mx:TextInput y="27" left="10" right="70" id="txtSubject" editable="true" enabled="true" visible="false" text="{_suggestedSubject}" styleName="CommentInputSubject">
+		<mx:filters>
+			<mx:DropShadowFilter
+			  distance="1"
+			  quality="5"
+			  blurX="5"
+			  blurY="5"
+			  alpha=".7"
+			  inner="true"
+			  angle="-90" />
+			</mx:filters>		
+	</mx:TextInput>
+	<mx:Label text="Subject" top="5" left="10" visible="false" id="label2" styleName="CommentBoxLabels" alpha="0.3" />
+	<mx:Button bottom="10" right="90" label="Submit" id="btnSubmit" enabled="{_validToSubmit}" visible="false"  click="SubmitHandler()" styleName="CommentBox"/>
+	<mx:Button bottom="10" right="10" label="Cancel" id="btnCancel" icon="@Embed(source='../../assets/icons/delete.png')" enabled="true" visible="false" click="CancelCommentEdit()" styleName="CommentBox" />
+</mx:Canvas>

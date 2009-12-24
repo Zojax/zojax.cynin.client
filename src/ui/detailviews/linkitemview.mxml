@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundAlpha="0.0"  creationComplete="inited()" >
+	<mx:Script>
+		<![CDATA[
+			import model.utils.Utils;
+			import flash.net.navigateToURL;
+			import model.logger.Logger;
+			import model.types.LinkItem;
+			import model.updates.UpdateItem;
+			import model.updates.LoadingEvent;
+			
+			[Bindable] public var _link:LinkItem = null;
+
+			private function inited():void
+			{
+				
+			}
+			
+			private function linkClickHandler(event:Event):void
+			{
+				Utils.OpenBrowser( this,_link.remoteURL,_link.title);
+			}
+			
+			private function CopyToClipboard():void
+			{
+				Clipboard.generalClipboard.clear();
+				Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT,_link.remoteURL,false);
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:Text text="{_link.remoteURL}" right="10" top="10" left="10" height="152" id="txtLink"  styleName="LinkTxt" useHandCursor="true" buttonMode="true"  addedToStage="dispatchEvent(new LoadingEvent(LoadingEvent.LOADED_DETAIL_VIEW));"/>
+	<mx:Button label="Open link in browser" id="btnOpenLink" click="linkClickHandler(event)" styleName="ContentBtn" top="170" horizontalCenter="-100">
+		<mx:icon>@Embed(source='../../assets/icons/link_go.png')</mx:icon>
+	</mx:Button>
+	<mx:Button label="Copy To Clipboard" id="btnCopyClipboard" click="CopyToClipboard()" styleName="ContentBtn" horizontalCenter="100" top="170">
+		<mx:icon>@Embed(source='../../assets/icons/paste_icon.png')</mx:icon>
+	</mx:Button>
+</mx:Canvas>

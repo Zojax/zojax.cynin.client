@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" xmlns:flexlib="flexlib.containers.*"
+  horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundAlpha="0.0"  creationComplete="inited()" >
+  <mx:states>
+    <mx:State name="downloading">
+      <mx:SetProperty target="{progDownload}" name="visible" value="true"/>
+      <mx:SetStyle target="{progDownload}" name="top" value="145"/>
+    </mx:State>
+  </mx:states>
+  <mx:Script>
+    <![CDATA[
+      import model.types.FileItem;
+      import code.google.as3httpclient.SocketHTTPRequest;
+      import mx.logging.Log;
+      import model.updates.updatemodel;
+      import mx.utils.Base64Encoder;
+      import model.logger.Logger;
+      import model.updates.UpdateItem;
+      import mx.binding.utils.ChangeWatcher;
+      import code.google.as3httpclient.SocketURLLoader;
+      import model.updates.LoadingEvent;
+
+      [Bindable] public var _file:UpdateItem = null;
+      [Bindable] public var _fileitem:FileItem = null;
+      private var downloadfile: File = null;
+      private var downloadURL:URLRequest = null;
+      private var socketrequest:SocketURLLoader = null;
+
+      private function inited():void
+      {
+        ChangeWatcher.watch(_file, "absoluteurl", binded);
+        if (_file != null)
+        {
+          binded(null);
+        }
+      }
+
+      private function binded(event:Event):void
+      {
+        trace("binded:" + _file);
+        if (_file != null && _file.absoluteurl !=null)
+        {
+          downloadURL = new URLRequest(_file.absoluteurl + "/view.html");
+                var encoder : Base64Encoder = new Base64Encoder();
+          encoder.encode(updatemodel.instance.username + ":" + updatemodel.instance.password);
+          var reqh:URLRequestHeader = new URLRequestHeader("Authorization","Basic " + encoder.toString());
+          downloadURL.requestHeaders.push(reqh);
+        }
+      }
+
+      private function linkClickHandler(event:Event):void
+      {
+        stacker.setAlwaysOnTop(false);
+        if (downloadfile == null) downloadfile = new File();
+        configureFileListeners(downloadfile);
+        btnDownloadFile.enabled = false;
+        downloadfile.browseForDirectory("Save " + _file.title + " in folder:");
+      }
+          private function configureFileListeners(dispatcher:IEventDispatcher):void
+          {
+              dispatcher.addEventListener(Event.CANCEL, cancelHandler);
+              dispatcher.addEventListener(Event.SELECT, selectHandler);
+          }
+          private function cancelHandler(event:Event):void {
+        stacker.setAlwaysOnTop(true);
+        btnDownloadFile.enabled = true
+          }
+          private function selectHandler(event:Event):void
+          {
+            //TODO: Handle file overwriting!!
+        stacker.setAlwaysOnTop(true);
+              downloadfile = File(event.target);
+              if (socketrequest == null) socketrequest = new SocketURLLoader();
+              configureListeners(socketrequest);
+              socketrequest.dataFormat = URLLoaderDataFormat.BINARY;
+              socketrequest.load(downloadURL);
+              trace("selectHandler: url=" + downloadURL.url + ", name=" + downloadfile.name + ", path=" + downloadfile.nativePath);
+          }
+
+
+          private function configureListeners(dispatcher:IEventDispatcher):void
+          {
+              dispatcher.addEventListener("complete", completeHandler);
+              dispatcher.addEventListener("ioError", ioErrorHandler);
+              dispatcher.addEventListener("open", openHandler);
+              dispatcher.addEventListener("progress", progressHandler);
+              dispatcher.addEventListener("securityError", securityErrorHandler);
+          }
+
+
+          private function completeHandler(event:Event):void
+          {
+            //this.currentState = "";
+            progDownload.label = "Completed."
+        progDownload.setProgress(progDownload.maximum,progDownload.maximum);
+             btnDownloadFile.enabled = true;
+             var writeFile:File = null;
+             var fileStream:FileStream = null;
+             try
+             {
+               writeFile = downloadfile.resolvePath(_fileitem.filename);
+               fileStream= new FileStream();
+          fileStream.open(writeFile, FileMode.WRITE);
+          var ba:ByteArray = SocketURLLoader(event.target).data as ByteArray;
+          fileStream.writeBytes(ba );
+          fileStream.close();
+             }
+             catch(error:Error)
+             {
+          Logger.instance.log("Serious error writing to file: " + writeFile.nativePath + ", " + error.message,Logger.SEVERITY_SERIOUS);
+             }
+          }
+
+          private function ioErrorHandler(event:IOErrorEvent):void
+          {
+              trace("ioErrorHandler: " + event);
+          }
+
+          private function openHandler(event:Event):void
+          {
+            this.currentState = "downloading";
+            progDownload.label = "LOADING %3%%";
+              trace("openHandler: " + event);
+          }
+
+          private function progressHandler(event:ProgressEvent):void
+          {
+            progDownload.setProgress(event.bytesLoaded, event.bytesTotal);
+              //trace("progressHandler: bytesLoaded=" + event.bytesLoaded + " bytesTotal=" + event.bytesTotal);
+          }
+
+          private function securityErrorHandler(event:SecurityErrorEvent):void
+          {
+              trace("securityErrorHandler: " + event);
+          }
+
+
+    ]]>
+  </mx:Script>
+  <flexlib:ButtonScrollingCanvas startScrollingEvent="{MouseEvent.MOUSE_OVER}" stopScrollingEvent="{MouseEvent.MOUSE_OUT}"
+     bottom="10" left="10" top="20" right="10" downButtonStyleName="ScrollDown" upButtonStyleName="ScrollUp" leftButtonStyleName="ScrollLeft" rightButtonStyleName="ScrollRight" buttonWidth="20">
+    <mx:HBox left="10" top="0" right="10" styleName="PlainHB">
+      <mx:Label text="File name:" styleName="ContentText"/>
+      <mx:Label text="{_fileitem.filename}"  styleName="ContentBoldText"/>
+    </mx:HBox>
+    <mx:HBox left="10" top="50" right="10" styleName="AlternatedHB">
+      <mx:Label text="File format:" styleName="ContentText"/>
+      <mx:Label text="{_fileitem.fileformat}"  styleName="ContentBoldText"/>
+    </mx:HBox>
+    <mx:HBox left="10" top="80" right="10" styleName="PlainHB">
+      <mx:Label text="File size:" styleName="ContentText"/>
+      <mx:Label text="{_fileitem.filesize}"  styleName="ContentBoldText"/>
+    </mx:HBox>
+    <mx:Button y="110" label="Download File" id="btnDownloadFile" click="linkClickHandler(event)"
+         addedToStage="dispatchEvent(new LoadingEvent(LoadingEvent.LOADED_DETAIL_VIEW));"  styleName="ContentBtn"  horizontalCenter="0">
+      <mx:icon>@Embed(source='../../assets/icons/arrow_down.png')</mx:icon>
+    </mx:Button>
+    <mx:ProgressBar right="10" height="38" top="140" left="10" id="progDownload"  styleName="DefaultPB" visible="false" mode="manual" indeterminate="false"/>
+  </flexlib:ButtonScrollingCanvas>
+</mx:Canvas>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" horizontalScrollPolicy="off" 
+	verticalScrollPolicy="off" xmlns:flexlib="flexlib.containers.*" backgroundAlpha="0.0"  creationComplete="inited()" >
+	<mx:Script>
+		<![CDATA[
+			import model.utils.Utils;
+			import model.logger.Logger;
+			import model.types.EventItem;
+			import model.updates.UpdateItem;
+			import mx.formatters.DateFormatter;
+			import mx.binding.utils.ChangeWatcher;
+			import model.updates.LoadingEvent;
+			
+			[Bindable] public var _event:EventItem = null;
+
+			[Bindable] private var _dayofmonthstart:String = "";
+			[Bindable] private var _monthstart:String = "";
+			[Bindable] private var _yearstart:String = "";
+			[Bindable] private var _hoursstart:String = "";
+			[Bindable] private var _minutesstart:String = "";
+			[Bindable] private var _ampmstart:String = "";
+			[Bindable] private var _dayofmonthend:String = "";
+			[Bindable] private var _monthend:String = "";
+			[Bindable] private var _yearend:String = "";
+			[Bindable] private var _hoursend:String = "";
+			[Bindable] private var _minutesend:String = "";
+			[Bindable] private var _ampmend:String = "";
+			
+			
+			private var _df:DateFormatter = new DateFormatter();
+			private function inited():void
+			{
+				
+				ChangeWatcher.watch(_event, "startdatetime", handleStartChanged);
+				ChangeWatcher.watch(_event, "enddatetime", handleEndChanged);
+				ChangeWatcher.watch(_event, "bodyhtml", handleBodyChanged);
+				_df.formatString = "A";
+				if (_event !=null)
+				{
+					if (_event.startdatetime != null)
+					{
+						handleStartChanged(null);
+					}
+					if (_event.enddatetime != null)
+					{
+						handleEndChanged(null);
+					}
+					if (_event.bodyhtml != null && _event.bodyhtml != "")
+					{
+						htmlEventBody.htmlText = Utils.CookHTML(_event.bodyhtml);
+					}
+				}
+				htmlEventBody.htmlLoader.navigateInSystemBrowser = true;
+				htmlEventBody.htmlLoader.useCache = true;
+			}
+			
+			public function handleStartChanged(event:Event):void
+			{
+				if (_event != null && _event.startdatetime != null)
+				{
+					_dayofmonthstart = _event.startdatetime.date.toString();
+					_df.formatString = "MMM";
+					_monthstart = _df.format(_event.startdatetime);
+					_yearstart = _event.startdatetime.fullYear.toString();
+					_hoursstart = _event.startdatetime.hours.toString();
+					_minutesstart = _event.startdatetime.minutes.toString();
+					_df.formatString = "A";
+					_ampmstart = _df.format(_event.startdatetime);
+				}
+				else
+				{
+					_dayofmonthstart = "";
+					_monthstart =  "";
+					_yearstart =  "";
+					_hoursstart =  "";
+					_minutesstart =  "";
+					_ampmstart =  "";
+				}
+			}
+			public function handleEndChanged(event:Event):void
+			{
+				if (_event != null && _event.enddatetime != null)
+				{
+					_dayofmonthend = _event.enddatetime.date.toString();
+					_df.formatString = "MMM";
+					_monthend = _df.format(_event.enddatetime);
+					_yearend = _event.enddatetime.fullYear.toString();
+					_hoursend = _event.enddatetime.hours.toString();
+					_minutesend = _event.enddatetime.minutes.toString();
+					_df.formatString = "A";
+					_ampmend = _df.format(_event.enddatetime);
+				}
+				else
+				{
+					_dayofmonthend =  "";
+					_monthend =  "";
+					_yearend =  "";
+					_hoursend =  "";
+					_minutesend =  "";
+					_ampmend =  "";
+				}
+			}
+			private function handleBodyChanged(event:Event):void
+			{
+				if (_event.bodyhtml != null && _event.bodyhtml != "")
+				{
+					htmlEventBody.htmlText = Utils.CookHTML(_event.bodyhtml);
+				}
+			}
+			private function htmlFocusIn(event:FocusEvent):void
+			{
+				setFocus();
+				Logger.instance.log("FocusIn: Blog Entry HTML Focused",Logger.SEVERITY_NORMAL);
+			}
+			private function htmlFocusOut(event:FocusEvent):void
+			{
+				Logger.instance.log("FocusOut: Blog Entry HTML Focused",Logger.SEVERITY_NORMAL);
+			}
+
+		]]>
+	</mx:Script>
+	<mx:Canvas id="cnvHTMLHolder" bottom="0" left="10" top="210" right="10" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:HTML left="10" top="0" height="100%" width="{cnvHTMLHolder.width - 10}" id="htmlEventBody" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
+			 htmlRender="dispatchEvent(new LoadingEvent(LoadingEvent.LOADED_DETAIL_VIEW));"
+			focusIn="htmlFocusIn(event)" focusOut="htmlFocusOut(event)" />
+	</mx:Canvas>
+	<mx:Label text="{_dayofmonthstart}" id="lblStartDay" styleName="EventDateDay" width="65" textAlign="right" left="50" top="10" alpha="0.8"/>
+	<mx:Label text="{_monthstart}" id="lblStartMonth" styleName="EventDateMonth" width="60" left="115" top="12"/>
+	<mx:Label text="{_yearstart}" id="lblStartYear" styleName="EventDateYear" width="60" left="115" top="30"/>
+	<mx:Label text="{_hoursstart + ':' + _minutesstart + ' ' + _ampmstart}" id="lblStartHour" styleName="EventDateTime" width="120" textAlign="center" left="52" top="48" alpha=".9"/>
+	<mx:Label text="to" styleName="EventDateTime" horizontalCenter="0" top="30" alpha="0.6"/>
+	<mx:Label text="{_dayofmonthend}" id="lblEndDay" styleName="EventDateDay" width="65" right="110" textAlign="right" top="10" alpha="0.8"/>
+	<mx:Label text="{_monthend}" id="lblEndMonth" styleName="EventDateMonth" width="60" right="50" top="12"/>
+	<mx:Label text="{_yearend}" id="lblEndYear" styleName="EventDateYear" width="60" right="50" top="30"/>
+	<mx:Label text="{_hoursend+ ':' + _minutesend + ' ' + _ampmend}" id="lblEndHour" styleName="EventDateTime" width="120" right="54" top="48" textAlign="center" alpha=".9"/>
+	<mx:HBox left="10" top="80" right="10" styleName="AlternatedHB">
+		<mx:Label text="Owner:" styleName="ContentText"/>
+		<mx:Label text="{_event.contactName}" id="lblContactName" styleName="ContentBoldText"/>
+	</mx:HBox>
+	<mx:HBox left="10" top="110" right="10" styleName="PlainHB">
+		<mx:Label text="Email:" styleName="ContentText"/>
+		<mx:Label text="{_event.contactEmail}" id="lblContactEmail" styleName="ContentBoldText"/>
+		<mx:Label text="Phone:" styleName="ContentText"/>
+		<mx:Label text="{_event.contactPhone}" id="lblContactPhone" styleName="ContentBoldText"/>		
+	</mx:HBox>
+	<mx:HBox left="10" top="140" right="10" styleName="AlternatedHB">
+		<mx:Label text="Attendees:" styleName="ContentText"/>
+		<mx:Label text="{_event.Attendees}" id="lblAttendees" styleName="ContentBoldText"/>
+	</mx:HBox>
+	<mx:HBox left="10" top="170" right="10" styleName="PlainHB">
+		<mx:Label text="Location:" styleName="ContentText"/>
+		<mx:Label text="{_event.location}" id="lblLocation" styleName="ContentBoldText"/>
+	</mx:HBox>
+	
+	
+</mx:Canvas>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<tile:BaseTile xmlns:mx="http://www.adobe.com/2006/mxml" width="230" height="48" 
+	click="handleClick(event)" styleName="tile" creationComplete="inited()" 
+	xmlns:control="ui.controls.*" xmlns:tile="ui.tiles.*" horizontalScrollPolicy="off" verticalScrollPolicy="off" >
+	<mx:Script>
+		<![CDATA[
+			import model.updates.RegularEvent;
+			import mx.events.PropertyChangeEvent;
+			import mx.formatters.DateFormatter;
+			import model.updates.updatemodel;
+			import mx.binding.utils.ChangeWatcher;
+			import model.logger.Logger;
+			import model.updates.UpdateItem;
+			
+			[Bindable] private var _lastaction:String = "";
+			[Bindable] private var _actiontitle:String = "";
+			
+			[Bindable] private var _itemdate:String = "";
+			private var haserrored:Boolean = false;
+			
+			[Bindable] private var _item:UpdateItem = null;
+			
+			private function inited():void
+			{
+				ChangeWatcher.watch(this,"Item",ItemUpdated);
+				if (Item != null) ItemUpdated(null);
+			}
+			
+			private function ItemUpdated(event:Event):void
+			{
+				_item = null;
+				_item = UpdateItem(Item);
+				itemdate();
+				updatePic();
+			}
+			
+			private function handleClick(event: Event): void 
+			{
+				Logger.instance.log("_item Clicked: " + this._item, Logger.SEVERITY_NORMAL);
+				dispatchEvent(new tileclickevent(this)); 
+			}
+			private function itemdate():void
+			{
+				if (_item != null)
+				{
+					var _df:DateFormatter = new DateFormatter();
+					_df.formatString = "DD";
+					var _dayofmonth:String = _df.format(_item.lastchangedate);
+					_df.formatString = "MMM";
+					var _month:String = _df.format(_item.lastchangedate);
+					_df.formatString = "YY";
+					var _year:String = _df.format(_item.lastchangedate);
+					_df.formatString = "LL";
+					var _hours:String = _df.format(_item.lastchangedate);
+					_df.formatString = "NN";
+					var _minutes:String = _df.format(_item.lastchangedate);
+					_df.formatString = "A";
+					var _ampm:String = _df.format(_item.lastchangedate);
+					_itemdate =  _hours + ":" + _minutes + _ampm + " " +  _dayofmonth + "-" + _month + "-" + _year ;
+					_actiontitle = _item.ActionTitle
+				}
+			} 
+			
+			private function updatePic():void
+			{
+				if (_item != null)
+				{
+					if (_item.changeruservo == null)
+					{
+						haserrored = true;
+						HasLoaded = true;
+					}
+					imgActionIcon.source =  updatemodel.instance.getImageForAction(_item.lastchangeaction);
+				}
+			}
+			private function CheckHasLoaded():void
+			{
+				if ((imgAvatar.percentLoaded == 100 && imgTypeIcon.percentLoaded == 100) || haserrored == true)
+				{
+					HasLoaded = true;
+					updatemodel.instance.dispatchEvent(new RegularEvent(RegularEvent.TILE_LOADED));
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="lblTitle" text="{_item.title}" height="18" truncateToFit="true" styleName="TileTitle" alpha="0.75" left="62" top="6" width="163"/>
+	<mx:Image id="imgTypeIcon" width="16" height="16" source="{_item.typevo.typeiconurl}" left="48" top="6" complete="CheckHasLoaded()"/>
+	<control:RoundedImage source="{_item.changeruservo.portrait_url}" id="imgAvatar" height="40" width="40" cornerRadius="[5,5,5,5]" left="5" complete="CheckHasLoaded()" ioError="haserrored=true;CheckHasLoaded();" verticalCenter="0"/>
+	<mx:Image id="imgActionIcon" width="16" left="35" complete="CheckHasLoaded()" bottom="5" height="16">
+		<mx:filters>
+			<mx:DropShadowFilter
+			  distance="1"
+			  quality="5"
+			  blurX="4"
+			  blurY="4"
+			  alpha="1"
+			  angle="90" />
+		</mx:filters>
+	</mx:Image>
+	<mx:Label id="lblCommentCount" text="{_item.commentcount}" height="20" alpha="0.5" width="40" styleName="TileCommentCount" visible="{_item.allowedcomments}" right="19" bottom="4"/>
+	<mx:Label id="lblModified" text="{_itemdate}" alpha="0.75" styleName="TileSmallText" left="52" width="120" height="16" bottom="5"/>
+	<mx:Image width="16" height="16" source="icons/comments.png"  visible="{_item.allowedcomments}" right="3" bottom="4" complete="CheckHasLoaded()"/>
+</tile:BaseTile>

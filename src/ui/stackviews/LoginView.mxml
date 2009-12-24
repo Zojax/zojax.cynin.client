@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="226" height="350" creationComplete="inited()" keyUp="handleKeyUp(event)">
+  <mx:states>
+    <mx:State name="loginfailed">
+    </mx:State>
+  </mx:states>
+  <mx:Script>
+    <![CDATA[
+      import model.options.OptionsEvent;
+      import model.options.OptionsModel;
+      import model.logger.Logger;
+      import model.updates.StringConstants;
+      import model.updates.authevent;
+      import model.updates.updatemodel;
+      [Bindable] private var _CanLogin:Boolean = false;
+      [Bindable] private var _failuremessage:String = "";
+
+
+      private var _reason:String = "";
+
+      public function set LogoutReason(reason:String):void
+      {
+        _reason = reason;
+      }
+
+      private function get LogoutMessage():String
+      {
+        switch (_reason)
+        {
+          default:
+            return "Welcome to " + StringConstants.APP_NAME +". Type out your Zojax site's address and your username and password to get started.";
+        }
+      }
+
+      private function inited():void
+      {
+        filllogindetails();
+        updatemodel.instance.addEventListener(authevent.AUTH_FAILED,handleFailedLogin);
+        updatemodel.instance.addEventListener(authevent.AUTH_SUCCEEDED,handleSuccessfulLogin);
+        OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_SAVECYNINID_CHANGED,handleSaveIDChanged);
+        OptionsModel.instance.addEventListener(OptionsEvent.OPTIONS_SAVECYNINID_CHANGED,handleSavePasswordChanged);
+        handleSaveIDChanged(null);
+        handleSavePasswordChanged(null);
+      }
+
+
+      private function handleSaveIDChanged(event:Event):void
+      {
+        chkSaveUsername.selected = OptionsModel.instance.SaveCynInID;
+      }
+      private function handleSavePasswordChanged(event:Event):void
+      {
+        chkSavePassword.selected = OptionsModel.instance.SavePassword;
+      }
+
+      public function filllogindetails():void
+      {
+        txtPassword.text = updatemodel.instance.password;
+        txtUsername.text = updatemodel.instance.username;
+        txtSiteURL.text = updatemodel.instance.SiteURL;
+        handleTextChanged(null);
+      }
+
+      private function handleTextChanged(event:Event):void
+      {
+        _CanLogin = ( txtPassword.text != "" && txtUsername.text != "" && txtSiteURL.text != "" );
+      }
+
+      private function handleBtnLogin(event:Event):void
+      {
+        updatemodel.instance.username = txtUsername.text;
+        updatemodel.instance.password = txtPassword.text;
+        updatemodel.instance.SiteURL = txtSiteURL.text;
+        updatemodel.instance.AttemptLogin();
+      }
+
+      private function handleFailedLogin(event:authevent):void
+      {
+        if (event.message != null)
+        {
+          _failuremessage = "Login failed: Please check your Username and Password.";
+          txtPassword.setFocus();
+        }
+        else
+        {
+          _failuremessage = "No Zojax site available at this URL.";
+          txtSiteURL.setFocus();
+        }
+        currentState = "loginfailed";
+      }
+
+      private function handleSuccessfulLogin(event:authevent):void
+      {
+        Logger.instance.log("Successfully logged in.");
+      }
+
+      private function handleKeyUp(event:KeyboardEvent):void
+      {
+        if (event.keyCode == Keyboard.ENTER)
+        {
+          handleBtnLogin(null);
+        }
+      }
+
+    ]]>
+  </mx:Script>
+  <mx:Text text="{_failuremessage}" id="text1" top="10" height="50" left="10"
+    right="10" textAlign="center" styleName="LoginLbl" alpha="0.8"/>
+  <mx:Label text="Zojax site URL:" id="label2" top="47" left="15" styleName="LoginLbl" alpha=".5"/>
+  <mx:TextInput displayAsPassword="false" editable="true" enabled="true" id="txtSiteURL" text="http://"  change="handleTextChanged(event)" left="10" right="10" top="65" styleName="URLInput"/>
+  <mx:Label text="Username:" id="label1" top="123" left="15" styleName="LoginLbl" alpha=".5"/>
+  <mx:TextInput displayAsPassword="false" editable="true" enabled="true" id="txtUsername" change="handleTextChanged(event)" top="141" left="10" right="10" styleName="LoginInput"/>
+  <mx:Label text="Password:" id="label3" top="179" left="15" styleName="LoginLbl" alpha=".5"/>
+  <mx:TextInput displayAsPassword="true" editable="true" enabled="true" id="txtPassword"  change="handleTextChanged(event)" top="197" left="10" right="10" styleName="LoginInput"/>
+  <mx:Button label="Login" id="btnLogin" enabled="{_CanLogin}" click="handleBtnLogin(event)" styleName="LoginBtn" right="15" bottom="10">
+    <!--<mx:icon>@Embed(source='../../assets/icons/login_icon.png')</mx:icon>-->
+  </mx:Button>
+  <mx:CheckBox label="Save Zojax ID details" top="239" left="10" id="chkSaveUsername" enabled="true" change="OptionsModel.instance.SaveCynInID = chkSaveUsername.selected"/>
+  <mx:CheckBox label="Save Password" top="269" left="10" id="chkSavePassword" change="OptionsModel.instance.SavePassword = chkSavePassword.selected" enabled="{chkSaveUsername.selected}"/>
+</mx:Canvas>

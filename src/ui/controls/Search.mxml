@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" y="42" right="10"  
+	borderStyle="solid" borderThickness="0" cornerRadius="0" width="220" height="24" horizontalScrollPolicy="off" verticalScrollPolicy="off" xmlns:control="ui.controls.*"
+	xmlns:flexlib="http://code.google.com/p/flexlib/"
+	creationComplete="inited()" 
+>
+	<mx:Script>
+		<![CDATA[
+			import model.updates.updatemodel;
+			import model.logger.Logger;
+		
+		private var _timer:Timer = new Timer(500,1);
+		
+		private function inited():void
+		{
+			_timer.addEventListener(TimerEvent.TIMER,handleTimer);
+			updatemodel.instance.addEventListener(SearchEvent.SEARCH_CANCELED,handleSearchCanceled);
+		}
+		
+		private function handleTimer(event:TimerEvent):void
+		{
+			updatemodel.instance.changeSearch(txtSearch.text);
+		}
+		
+		private function handleSearchCanceled(event:SearchEvent):void
+		{
+			txtSearch.text = "";
+		}
+		private function handleTextChange(event:Event):void
+		{
+//			Logger.instance.log("Search: Text Change",Logger.SEVERITY_NORMAL); 
+			if (txtSearch.text.length > 0)
+			{
+				updatemodel.instance.searchBeginTyping();
+				_timer.reset();
+				_timer.start();
+			}
+			else
+			{
+				cancel();
+			}
+		}
+		private function cancel():void
+		{
+			if (txtSearch.text.length > 0) txtSearch.text = "";
+			btnCancel.enabled = false;
+			updatemodel.instance.cancelSearch();
+		}
+		private function unsetfocus():void
+		{
+			stacker.instanceStack.setFocus();			
+		}
+		private function handlefocusIn():void
+		{
+			btnCancel.enabled = true;
+		}
+		
+		private function handlefocusOut():void
+		{
+			if (txtSearch.text.length <= 0 && focusManager.getFocus() != txtSearch) btnCancel.enabled = false;
+		}
+		]]>
+	</mx:Script>
+	<flexlib:PromptingTextInput left="0" right="0" top="0" bottom="0" prompt="Search..." 
+		id="txtSearch" focusIn="handlefocusIn()" focusOut="handlefocusOut()" 
+		change="handleTextChange(event)" styleName="SearchInput"/>
+	<mx:Button id="btnCancel" click="cancel()" right="5" enabled="false" styleName="Searchbtn" 
+		verticalCenter="0" buttonMode="true" useHandCursor="true"/>
+</mx:Canvas>

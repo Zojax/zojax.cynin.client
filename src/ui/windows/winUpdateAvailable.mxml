@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that
+#enables teams to seamlessly work together on files, documents and content in
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or any later version and observe
+#the Additional Terms applicable to this program and must display appropriate
+#legal notices. In accordance with Section 7(b) of the GNU General Public
+#License version 3, these Appropriate Legal Notices must retain the display of
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in.
+#For any queries regarding the licensing, please send your mails to
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"  xmlns:flexlib="flexlib.containers.*"
+  width="400" height="334" title="New Zojax Desktop Version Available !" creationComplete="inited()"
+  styleName="BlackWdw" showCloseButton="false">
+  <mx:states>
+    <mx:State name="downloading">
+      <mx:SetProperty name="height" value="406"/>
+      <mx:SetStyle target="{txtChangelog}" name="bottom" value="92"/>
+      <mx:SetStyle target="{txtReleaseDate}" name="bottom" value="64"/>
+      <mx:SetStyle target="{txtYourVersion0}" name="bottom" value="36"/>
+      <mx:SetStyle target="{txtYourVersion}" name="bottom" value="56"/>
+      <mx:AddChild relativeTo="{controlbar1}" position="before">
+        <mx:ProgressBar id="progDownload" x="10" y="296" width="380" styleName="DefaultPB" mode="manual" indeterminate="false"/>
+      </mx:AddChild>
+    </mx:State>
+  </mx:states>
+  <mx:Script>
+    <![CDATA[
+      import model.logger.Logger;
+      import code.google.as3httpclient.SocketURLLoader;
+      import mx.binding.utils.ChangeWatcher;
+      import model.versions.UpdateVersionVO;
+      import mx.managers.PopUpManager;
+      [Bindable] public var appversion:String = "";
+      [Bindable] public var voVersion:UpdateVersionVO = null;
+
+      private var downloadfile:File = null;
+
+      private function inited():void
+      {
+        if (voVersion != null) binded(null);
+        namespace airAppNS = "http://ns.adobe.com/air/application/1.5";
+        use namespace airAppNS;
+        appversion = NativeApplication.nativeApplication.applicationDescriptor.version;
+        ChangeWatcher.watch(this,"voVersion",binded);
+      }
+
+      private function binded(event:Event):void
+      {
+        if (appversion != voVersion.Version )
+        {
+          enableButtons();
+        }
+        else
+        {
+          disableButtons();
+        }
+      }
+
+      private function disableButtons():void
+      {
+        btnUpdate.enabled = false;
+//              btnClose.enabled = false;
+      }
+      private function enableButtons():void
+      {
+        btnUpdate.enabled = true;
+//              btnClose.enabled = true;
+      }
+      private function DownloadAndInstall():void
+      {
+        disableButtons();
+        downloadfile = stacker.cacheDir.resolvePath("updates").resolvePath("cynindesktopupdate" + voVersion.Version + ".air");
+        var sock:URLLoader = new URLLoader();
+              configureListeners(sock);
+              sock.dataFormat =  URLLoaderDataFormat.BINARY;
+              sock.load(new URLRequest(voVersion.urlDownlad));
+      }
+          private function configureListeners(dispatcher:IEventDispatcher):void
+          {
+              dispatcher.addEventListener("complete", completeHandler);
+              dispatcher.addEventListener("ioError", ioErrorHandler);
+              dispatcher.addEventListener("open", openHandler);
+              dispatcher.addEventListener("progress", progressHandler);
+              dispatcher.addEventListener("securityError", securityErrorHandler);
+          }
+          private function completeHandler(event:Event):void
+          {
+            progDownload.label = "Completed."
+        progDownload.setProgress(progDownload.maximum,progDownload.maximum);
+             enableButtons();
+             var fileStream:FileStream = null;
+             try
+             {
+               fileStream= new FileStream();
+          fileStream.open(downloadfile, FileMode.WRITE);
+          var ba:ByteArray = URLLoader(event.target).data as ByteArray;
+          fileStream.writeBytes(ba );
+          fileStream.close();
+             }
+             catch(error:Error)
+             {
+          Logger.instance.log("Serious error writing to file: " + downloadfile.nativePath + ", " + error.message,Logger.SEVERITY_SERIOUS);
+          return;
+             }
+             try
+             {
+               var updater:Updater = new Updater();
+               updater.update(downloadfile,voVersion.Version);
+             }
+             catch (e:Error)
+             {
+               Logger.instance.log("Could not update self, may be running in adl.exe" + e.message,Logger.SEVERITY_SERIOUS);
+             }
+          }
+
+          private function ioErrorHandler(event:IOErrorEvent):void
+          {
+              Logger.instance.log("IOERROR while downloading update: " + event.text);
+          }
+
+          private function openHandler(event:Event):void
+          {
+            this.currentState = "downloading";
+            progDownload.label = "LOADING %3%%";
+          }
+
+          private function progressHandler(event:ProgressEvent):void
+          {
+              Logger.instance.log("Progress while downloading update: " + event.bytesLoaded.toString() + ",total: " + event.bytesTotal.toString());
+            progDownload.setProgress(event.bytesLoaded, event.bytesTotal);
+          }
+
+          private function securityErrorHandler(event:SecurityErrorEvent):void
+          {
+              Logger.instance.log("Security Error while downloading update: " + event.text);
+          }
+          private function cancel():void
+          {
+            PopUpManager.removePopUp(this);
+          }
+
+    ]]>
+  </mx:Script>
+  <mx:Text
+    text="Zojax Desktop has detected an update that is available for itself. Would you like to download and install the udpate now?"  left="10" top="10" right="10" id="txtVersionMessage" styleName="textwhite" height="52"/>
+  <flexlib:ButtonScrollingCanvas    startScrollingEvent="{MouseEvent.MOUSE_OVER}" stopScrollingEvent="{MouseEvent.MOUSE_OUT}"
+     horizontalScrollPolicy="off" verticalScrollPolicy="auto" top="57" bottom="57" width="380"  horizontalCenter="0">
+    <mx:Text text="{'Release Notes:' + voVersion.ReleaseNotes}" id="txtChangelog" styleName="textwhite" horizontalCenter="0"
+      top="0" bottom="0" width="380" />
+  </flexlib:ButtonScrollingCanvas>
+  <mx:Text
+    text="{'Your Version:' + appversion}" id="txtYourVersion" styleName="textwhite" bottom="20" left="10" width="158" height="28"/>
+  <mx:Text
+    text="{'New Version:' + voVersion.Version}" id="txtYourVersion0" styleName="textwhite" bottom="9" right="10"/>
+  <mx:Text
+    text="{'Released On:' + voVersion.sDateRelease}" id="txtReleaseDate" styleName="textwhite" bottom="32" right="10"/>
+  <mx:ControlBar autoLayout="true" horizontalAlign="right" verticalAlign="middle" id="controlbar1">
+    <mx:Button label="Update" id="btnUpdate" click="DownloadAndInstall()" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/accept.png')"/>
+    <mx:Button label="Close" id="btnClose" click="cancel()" styleName="DefaultStyle" icon="@Embed(source='../../assets/icons/delete.png')"/>
+  </mx:ControlBar>
+</mx:TitleWindow>

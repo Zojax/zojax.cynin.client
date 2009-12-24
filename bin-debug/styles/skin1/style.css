@@ -1,0 +1,1149 @@
+/* CSS file */
+
+
+/****************************FONT EMBEDS *************************/
+
+@font-face
+{
+  src: url("/assets/fonts/ARIAL.TTF");
+  font-family: cynFont;
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face
+{
+  src: url("/assets/fonts/ARIALBD.TTF");
+  font-family: cynFont;
+  font-style: normal;
+  font-weight: bold;
+}
+
+@font-face
+{
+  src: url("/assets/fonts/ARIALI.TTF");
+  font-family: cynFont;
+  font-style:italic;
+  font-weight: normal;
+}
+
+@font-face
+{
+  src: url("/assets/fonts/ARIALBI.TTF");
+  font-family: cynFont;
+  font-style:italic;
+  font-weight: bold;
+}
+
+
+/*************************END FONT EMBEDS ****************************/
+
+
+Canvas.dockbg
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="mainbg.swf", symbol="stackerBG");
+}
+
+VBox.vbxStack
+{
+  vertical-gap: 0;
+}
+Button.btnTongue
+{
+  skin: Embed(skinClass="btnScrollLeft");
+  icon: Embed(source="styles/skin1/arrows.swf", symbol="left_arrow");
+}
+Button.ScrollDown
+{
+  skin: Embed(skinClass="btnScrollDown");
+  icon: Embed(source="styles/skin1/arrows.swf", symbol="down_arrow");
+}
+Button.ScrollUp
+{
+  skin: Embed(skinClass="btnScrollUp");
+  icon: Embed(source="styles/skin1/arrows.swf", symbol="up_arrow");
+}
+Button.ScrollLeft
+{
+  skin: Embed(skinClass="btnScrollLeft");
+  icon: Embed(source="styles/skin1/arrows.swf", symbol="left_arrow");
+}
+Button.ScrollRight
+{
+  skin: Embed(skinClass="btnScrollRight");
+  icon: Embed(source="styles/skin1/arrows.swf", symbol="right_arrow");
+}
+Canvas.MainWindow
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="mainwindowbg.swf", symbol="MainWindowBG");
+}
+Canvas.DateBackground
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="datetimebg.swf", symbol="DateTimeBG");
+}
+HBox.TypeBackground,
+Canvas.fivepxbox
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="fivepxbglite.swf", symbol="FivepxBGLite");
+}
+
+Canvas.tile
+{
+
+  border-thickness: 1;
+  border-sides: bottom;
+  border-color: #555555;
+  border-style: solid;
+}
+
+Text.textwhite
+{
+  color: #ffffff;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  font-grid-fit-type: subpixel;
+  font-anti-alias-type: advanced;
+  letter-spacing: 1px;
+}
+
+/*----------- Tile ------------*/
+
+Label.TileCommentCount
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 20px;
+  font-weight:bold;
+  text-align: right;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+Label.TileSmallText
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 10px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+Label.TileTitle
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 12px;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+Label.TileRelevance
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 16px;
+  font-weight:bold;
+  text-align: right;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+/*----------- End Tile ------------*/
+
+/*----------- Window ------------*/
+
+Label.WindowTitle
+{
+  color: #FFFFFF;
+  fontSize: 14px;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing: 1;
+}
+Label.WindowSmallText
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 10px;
+  font-grid-fit-type:pixel;
+  font-anti-alias-type:advanced;
+  letter-spacing: 1px;
+}
+
+Label.WindowDescription
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 11px;
+  font-grid-fit-type:pixel;
+  font-anti-alias-type:advanced;
+  letter-spacing: 1px;
+}
+
+
+Label.AvatarText
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 8px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+
+Label.WindowDateDay
+{
+  color: #FFFFFF;
+  fontSize: 32px;
+  font-family: cynFont;
+  font-weight: bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  text-align:center;
+}
+Label.WindowDateMonth
+{
+  color: #FFFFFF;
+  fontSize: 14;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+  text-align:center;
+}
+Label.WindowDateYear
+{
+  color: #FFFFFF;
+  fontSize: 13;
+  font-family: cynFont;
+  font-grid-fit-type:pixel;
+  font-anti-alias-type:advanced;
+  text-align:center;
+}
+Label.WindowDateTime
+{
+  color: #FFFFFF;
+  fontSize: 13;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+  text-align:center;
+}
+
+TabNavigator.MainWindowTabNav
+{
+  horizontalGap: 5;
+  tabOffset: 10;
+  borderStyle: solid;
+  borderColor: #335878;
+  borderThickness: 1;
+  border-sides: top;
+  tabStyleName: tabNavigatorTab;
+  selectedTabTextStyleName: tabNavigatorSelectedTabText;
+  themeColor: #000000;
+  background-alpha: 0;
+}
+
+
+.tabNavigatorTab
+{
+  corner-radius: 5;
+  border-color: #335878;
+  theme-color: #000000;
+  padding-top: 4;
+  font-family: cynFont;
+  font-weight:bold;
+  font-size: 14px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  fill-alphas: 0.3, 0.5, 0.5, 0.7;
+  fill-colors: #1F1F1F, #1F1F1F, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlight-alphas: 0.3, 0.2;
+  text-roll-over-color: #FFFFFF;
+  text-selected-color: #DDDDDD;
+  disabled-color: #CCCCCC;
+  letter-spacing: 1;
+}
+
+.OptionsGeneralCanvas
+{
+}
+
+.tabNavigatorSelectedTabText
+{
+  color: #555555;
+  text-roll-over-color: #1f1f1f;
+  font-family: cynFont;
+  font-weight:bold;
+  font-size: 14px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+
+/*----------- End Window ------------*/
+
+
+Label.CommentTitle
+{
+  color: #555555;
+  fontSize: 12px;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+}
+
+Label.CommentDateTime
+{
+  color: #555555;
+  fontSize: 12px;
+  font-family: cynFont;
+  font-grid-fit-type:pixel;
+  font-anti-alias-type:advanced;
+  font-style:italic;
+  letter-spacing: 1px;
+}
+
+Text.CommentBody
+{
+  color: #292929;
+  fontFamily: cynFont;
+  fontSize: 13px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type: advanced;
+}
+
+
+Canvas.AvatarFrame
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="avatarbg.swf", symbol="AvatarBG");
+}
+Canvas.SiteLogoFrame
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="logobg.swf", symbol="LogoBG");
+}
+
+Button.DefaultStyle
+{
+  cornerRadius: 3;
+  borderColor: #000000;
+  fillAlphas: .7, .9, 1, 1;
+  fillColors: #1f1f1f, #1f1f1f, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #0c4b81;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  font-weight:normal;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  vertical-align: middle;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+Button.CommentBox
+{
+  cornerRadius: 3;
+  borderColor: #000000;
+  fillAlphas: .7, .9, 1, 1;
+  fillColors: #1f1f1f, #1f1f1f, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #0c4b81;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  font-weight:normal;
+  fontSize: 11px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+Button.AddComment
+{
+  cornerRadius: 3;
+  borderColor: #000000;
+  fillAlphas: .7, .9, 1, 1;
+  fillColors: #1f1f1f, #1f1f1f, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #0c4b81;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  font-weight:bold;
+  fontSize: 14px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+Button.Reply
+{
+  cornerRadius: 3;
+  borderColor: #000000;
+  fillAlphas: .7, .9, 1, 1;
+  fillColors: #1f1f1f, #1f1f1f, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #0c4b81;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  font-weight:normal;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+Button.BottomLinkButtons
+{
+  cornerRadius: 3;
+  borderColor: #808080;
+  fillAlphas: 0.5, 0.8, 1, 1;
+  fillColors: #ffffff, #cccccc, #71B9F7, #0F6BBA;
+  color: #292929;
+  highlightAlphas: 0.5, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #292929;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  font-weight:normal;
+  fontSize: 12px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+Button.ContentBtn
+{
+  cornerRadius: 3;
+  borderColor: #808080;
+  fillAlphas: 0.5, 0.8, 1, 1;
+  fillColors: #ffffff, #cccccc, #71B9F7, #0F6BBA;
+  color: #292929;
+  highlightAlphas: 0.5, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #292929;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  font-weight:bold;
+  fontSize: 12px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+HScrollBar
+{
+  downArrowSkin: Embed(skinClass="HScrollBar_downArrowSkin");
+  thumbIcon: Embed(skinClass="HScrollBar_thumbIcon");
+  thumbSkin: Embed(skinClass="HScrollBar_thumbSkin");
+  trackSkin: Embed(skinClass="HScrollBar_trackSkin");
+  upArrowSkin: Embed(skinClass="HScrollBar_upArrowSkin");
+}
+VScrollBar
+{
+  downArrowSkin: Embed(skinClass="VScrollBar_downArrowSkin");
+  thumbIcon: Embed(skinClass="VScrollBar_thumbIcon");
+  thumbSkin: Embed(skinClass="VScrollBar_thumbSkin");
+  trackSkin: Embed(skinClass="VScrollBar_trackSkin");
+  upArrowSkin: Embed(skinClass="VScrollBar_upArrowSkin");
+}
+TextArea.CommentInputBody
+{
+  border-color: #cccccc;
+  borderStyle: solid;
+  border-alpha: 0.8;
+  border-thickness: 1px;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 14px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:normal;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:pixel;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #999999;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="statusinputbg.swf", symbol="StatusInputBG");
+}
+TextInput.CommentInputSubject
+{
+  border-color: #cccccc;
+  borderStyle: solid;
+  border-alpha: 0.8;
+  border-thickness: 1px;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 14px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #999999;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="statusinputbg.swf", symbol="StatusInputBG");
+}
+Label.CommentBoxLabels
+{
+  color: #FFFFFF;
+  fontFamily: cynFont;
+  font-weight:bold;
+  fontSize: 14;
+  font-style: normal;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+Button.MenuBtn
+{
+  skin: Embed(skinClass="MenuBtn");
+}
+
+/* --------- Login Screen -------------- */
+
+TextInput.LoginInput
+{
+  border-color: #1f1f1f;
+  borderStyle: solid;
+  border-alpha: 0.4;
+  border-thickness: 0px;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 14;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  paddingLeft: 3;
+  paddingRight: 3;
+  padding-top: 3px;
+  letter-spacing: 1px;
+  dropShadowEnabled: false;
+  theme-color: #ffffff;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="searchbg.swf", symbol="searchBG");
+}
+
+TextInput.URLInput
+{
+  border-color: #1f1f1f;
+  borderStyle: solid;
+  border-alpha: 0.4;
+  border-thickness: 0px;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:normal;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:pixel;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #ffffff;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="searchbg.swf", symbol="searchBG");
+}
+
+Label.LoginLbl
+{
+  color: #FFFFFF;
+  fontFamily: cynFont;
+  fontSize: 12;
+  font-style: normal;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing:1px;
+}
+
+Button.LoginBtn
+{
+  cornerRadius: 3px;
+  borderColor: #000000;
+  fillAlphas: .6, .8, 1, 1;
+  fillColors: #292929, #292929, #71B9F7, #0F6BBA;
+  color: #FFFFFF;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #0c4b81;
+  disabledColor: #CCCCCC;
+  fontFamily: cynFont;
+  font-weight:bold;
+  fontSize: 18px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #0c4b81;
+  paddingBottom: 0;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+/* --------- End Login Screen ----------- */
+
+/* --------- Link Detail View ----------- */
+
+Text.LinkTxt
+{
+  color: #292929;
+  fontFamily: cynFont;
+  fontSize: 14px;
+  font-weight:bold;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type: advanced;
+}
+
+/* --------- End Link Detail View ----------- */
+
+ProgressBar.DefaultPB
+{
+   borderColor: #cccccc;
+   barColor: #ff6600;
+   trackColors: #cccccc, #e6e6e6;
+   color: #555555;
+   textIndent: 5;
+   trackHeight: 8;
+   verticalGap: 5;
+   font-family: cynFont;
+   font-style:normal;
+   font-weight:bold;
+   font-anti-alias-type:advanced;
+   font-grid-fit-type:subpixel;
+   fontSize: 12;
+}
+
+/*----------- Pager ---------------*/
+
+Button.PagerFirst
+{
+  skin: Embed(skinClass="BtnSkinFirst");
+}
+Button.PagerLeft
+{
+  skin: Embed(skinClass="BtnSkinLeft");
+}
+Button.PagerRight
+{
+  skin: Embed(skinClass="BtnSkinRight");
+}
+Button.PagerLast
+{
+  skin: Embed(skinClass="BtnSkinLast");
+}
+
+Canvas.pagerbg
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="pagerbg.swf", symbol="PagerBg");
+}
+
+Text.PagerTxt
+{
+  color: #ffffff;
+  font-family: cynFont;
+  font-weight:bold;
+  font-size: 11px;
+  font-grid-fit-type: subpixel;
+  font-anti-alias-type: advanced;
+  letter-spacing:1px;
+}
+
+Text.PagerTxtSmall
+{
+  color: #ffffff;
+  font-family: cynFont;
+  font-weight:normal;
+  font-size: 10px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type: advanced;
+  letter-spacing:0px;
+}
+
+TextInput.PageInput
+{
+  border-color: #1f1f1f;
+  borderStyle: solid;
+  border-thickness:0px;
+  border-alpha: 0.4;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #ffffff;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="searchbg.swf", symbol="searchBG");
+}
+
+
+/*----------- Pager End -----------*/
+
+TextInput.SearchInput
+{
+  border-color: #1f1f1f;
+  borderStyle: solid;
+  border-thickness:0px;
+  border-alpha: 0.4;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  padding-left: 3px;
+  padding-right: 20px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #ffffff;
+  backgroundSize: "100%";
+  background-color: #555555;
+  background-alpha: 0.8;
+  backgroundImage: Embed(source="searchbg.swf", symbol="searchBG");
+}
+
+/*------------ Branding ------------------*/
+
+Text.StackerTitleTxt
+{
+  color: #ffffff;
+  font-family: cynFont;
+  font-weight:bold;
+  font-size: 10px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type: advanced;
+}
+
+Label.SiteTitleText
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 12px;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing:1px;
+}
+
+/*------------ Branding End ------------------*/
+
+/*------------ Event view ------------------*/
+
+Label.EventDateDay
+{
+  color: #555555;
+  fontSize: 36px;
+  font-family: cynFont;
+  font-weight: bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+}
+Label.EventDateMonth
+{
+  color: #555555;
+  fontSize: 14;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+Label.EventDateYear
+{
+  color: #555555;
+  fontSize: 13;
+  font-family: cynFont;
+  font-grid-fit-type:pixel;
+  font-anti-alias-type:advanced;
+}
+Label.EventDateTime
+{
+  color: #555555;
+  fontSize: 16;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+
+/*------------ Event view End ------------------*/
+
+/*------------ Generic Content ------------------*/
+Label.ContentText
+{
+  color: #555555;
+  fontSize: 13;
+  font-family: cynFont;
+  font-weight:normal;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+Label.ContentBoldText
+{
+  color: #555555;
+  fontSize: 13;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+HBox.AlternatedHB
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="fivepxbglite.swf", symbol="FivepxBGLite");
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+}
+HBox.PlainHB
+{
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+}
+/*------------ Generic Content End --------------*/
+
+CheckBox {
+  highlightAlphas: 0.5, 0.2;
+  fillAlphas: 0.6, 0.6, 0.75, 0.65;
+  fillColors: #808080, #555555, #ffffff, #cccccc;
+  borderColor: #1f1f1f;
+  color: #cccccc;
+  textSelectedColor: #cccccc;
+  textRollOverColor: #ffffff;
+  themeColor: #71b9f7;
+  fontSize: 12;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+Window.BlackWdw
+{
+   borderColor: #1f1f1f;
+   borderAlpha: 0.8;
+   borderThicknessLeft: 0;
+   borderThicknessTop: 0;
+   borderThicknessBottom: 0;
+   borderThicknessRight: 0;
+   roundedBottomCorners: true;
+   cornerRadius: 8;
+   backgroundAlpha: 0.9;
+   highlightAlphas: 0.4, 0.2;
+   headerColors: #444444, #292929;
+   footerColors: #292929, #1f1f1f;
+   backgroundColor: #292929;
+   dropShadowEnabled: true;
+   shadowDistance: 0;
+   titleStyleName: "BlackWdwTitle";
+}
+
+.BlackWdwTitle
+{
+  color: #ffffff;
+  fontSize: 10;
+  font-family: cynFont;
+  font-weight:normal;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing:1px;
+}
+Button.Searchbtn
+{
+  skin: Embed(skinClass="BtnSearch");
+}
+Slider
+{
+   labelOffset: -15;
+   thumbOffset: 0;
+   dataTipOffset: 0;
+   tickOffset: -6;
+   tickLength: 5;
+   tickThickness: 1;
+   tickColor: #555555;
+   showTrackHighlight: false;
+   invertThumbDirection: false;
+   borderColor: #cccccc;
+   trackColors: #cccccc, #cccccc;
+   themeColor: #0000cc;
+   labelStyleName: "DefaultSliderLabelStyle";
+}
+
+.DefaultSliderLabelStyle
+{
+  letterSpacing: 0;
+  color: #ffffff;
+  fontFamily: cynFont;
+  fontSize: 12px;
+  font-grid-fit-type: subpixel;
+  font-anti-alias-type: advanced;
+  letter-spacing: 1px;
+}
+
+/*------------ Options box --------------- */
+
+TabNavigator.OptionsTabNav
+{
+  horizontalGap: 5;
+  tabOffset: 10;
+  borderStyle: solid;
+  borderColor: #000000;
+  borderThickness: 1;
+  corner-radius: 5px;
+  tabStyleName: optionsTabNavigatorTab;
+  selectedTabTextStyleName: optionsTabNavigatorSelectedTabText;
+  themeColor: #000000;
+  background-color:#1f1f1f;
+}
+
+
+.optionsTabNavigatorTab
+{
+  corner-radius: 5;
+  border-color: #000000;
+  theme-color: #000000;
+  padding-top: 4;
+  font-family: cynFont;
+  font-weight:normal;
+  font-size: 12px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  fill-alphas: 0.3, 0.5, 0.5, 0.7;
+  fill-colors: #1F1F1F, #1F1F1F, #71B9F7, #0F6BBA;
+  color: #cccccc;
+  highlight-alphas: 0.3, 0.2;
+  text-roll-over-color: #FFFFFF;
+  text-selected-color: #cccccc;
+  disabled-color: #555555;
+  letter-spacing: 1;
+}
+
+.optionsTabNavigatorSelectedTabText
+{
+  color: #cccccc;
+  text-roll-over-color: #ffffff;
+  font-family: cynFont;
+  font-weight:normal;
+  font-size: 12px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+/*------------ Options box end --------------- */
+
+
+/*------------ Status end --------------- */
+
+Canvas.statusbg
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="statusbg.swf", symbol="StatusBG");
+}
+
+Text.txtStatus
+{
+  color: #ffffff;
+  font-family: cynFont;
+  font-weight: normal;
+  font-size: 11px;
+  font-grid-fit-type: pixel;
+  font-anti-alias-type: advanced;
+  letter-spacing:0;
+}
+
+Canvas.statuspopbg
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="statuspopbg.swf", symbol="StatusPopBG");
+}
+
+Label.CharCount
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 20px;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+Label.StatusTitle
+{
+  color: #FFFFFF;
+  font-family: cynFont;
+  font-size: 16px;
+  font-weight:bold;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+}
+
+Label.StatusSubTitle
+{
+  color: #1c3a00;
+  font-family: cynFont;
+  font-size: 10px;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:subpixel;
+  letter-spacing: 1px;
+}
+
+TextArea.StatusInput
+{
+  border-color: #1f1f1f;
+  borderStyle: solid;
+  border-alpha: 0.8;
+  border-thickness: 1px;
+  cornerRadius: 5px;
+  fontFamily: cynFont;
+  fontSize: 14px;
+  color: #ffffff;
+  font-style: normal;
+  font-weight:normal;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:pixel;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  letter-spacing:1px;
+  dropShadowEnabled: false;
+  theme-color: #ffffff;
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="statusinputbg.swf", symbol="StatusInputBG");
+}
+
+Button.StatusSet
+{
+  cornerRadius: 3;
+  borderColor: #1c3a00;
+  fillAlphas: 1, 1, 1, 1;
+  fillColors: #8ac000, #387600, #387600, #8ac000;
+  color: #ffffff;
+  highlightAlphas: 0.4, 0.2;
+  textRollOverColor: #FFFFFF;
+  textSelectedColor: #285400;
+  disabledColor: #387600;
+  fontFamily: cynFont;
+  font-weight:bold;
+  fontSize: 12px;
+  vertical-align: middle;
+  font-anti-alias-type:advanced;
+  font-grid-fit-type:pixel;
+  letter-spacing: 1;
+  paddingTop: 2;
+  themeColor: #285400;
+  paddingBottom: 1;
+  paddingLeft: 5;
+  paddingRight: 5;
+}
+
+
+/*------------ Status end --------------- */
+
+/*------------ Status Detail Window--------------- */
+
+Text.StatusWindowTitle
+{
+  color: #FFFFFF;
+  fontSize: 14px;
+  font-family: cynFont;
+  font-weight:bold;
+  font-grid-fit-type:subpixel;
+  font-anti-alias-type:advanced;
+  letter-spacing: 1;
+}
+
+Canvas.StatusWindow
+{
+  backgroundSize: "100%";
+  backgroundImage: Embed(source="statuswindowbg.swf", symbol="StatusWindowBG");
+}
+
+/*------------ Status Detail Window end --------------- */

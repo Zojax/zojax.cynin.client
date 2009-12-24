@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+###############################################################################
+#cyn.in is an open source Collaborative Knowledge Management Appliance that 
+#enables teams to seamlessly work together on files, documents and content in 
+#a secure central environment.
+#
+#cyn.in v2 an open source appliance is distributed under the GPL v3 license 
+#along with commercial support options.
+#
+#cyn.in is a Cynapse Invention.
+#
+#Copyright (C) 2008 Cynapse India Pvt. Ltd.
+#
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software 
+#Foundation, either version 3 of the License, or any later version and observe 
+#the Additional Terms applicable to this program and must display appropriate 
+#legal notices. In accordance with Section 7(b) of the GNU General Public 
+#License version 3, these Appropriate Legal Notices must retain the display of 
+#the "Powered by cyn.in" AND "A Cynapse Invention" logos. You should have 
+#received a copy of the detailed Additional Terms License with this program.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+#Public License for more details.
+#
+#You should have received a copy of the GNU General Public License along with 
+#this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#You can contact Cynapse at support@cynapse.com with any problems with cyn.in. 
+#For any queries regarding the licensing, please send your mails to 
+# legal@cynapse.com
+#
+#You can also contact Cynapse at:
+#802, Building No. 1,
+#Dheeraj Sagar, Malad(W)
+#Mumbai-400064, India
+###############################################################################
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" y="42" right="10"  
+	borderStyle="solid" borderThickness="0" cornerRadius="6" width="52" height="70" horizontalScrollPolicy="off" verticalScrollPolicy="off" xmlns:control="ui.controls.*" 
+	styleName="AvatarFrame" >
+	<mx:Script>
+		<![CDATA[
+			[Bindable] private var _avatarURL:String = "";
+			[Bindable] private var _avatarUsername:String = "";
+			
+			public function get AvatarImageURL():String
+			{
+				return _avatarURL;
+			}
+			public function set AvatarImageURL(newurl:String):void
+			{
+				_avatarURL = newurl;
+			}
+			
+			public function get AvatarUsername():String
+			{
+				return _avatarUsername;
+			}
+			public function set AvatarUsername(newusername:String):void
+			{
+				_avatarUsername = newusername;
+			}
+		]]>
+	</mx:Script>
+	<control:RoundedImage x="1" y="1" width="50" height="50" id="imgAvatar" source="{_avatarURL}" cornerRadius="[5,5,0,0]" />
+	<mx:Label text="{_avatarUsername}" id="txtModifiedBy" styleName="AvatarText" width="50" textAlign="center" height="15" bottom="1" left="0"/>
+	<mx:filters>
+		<mx:DropShadowFilter
+		  distance="0"
+		  quality="5"
+		  blurX="5"
+		  blurY="5"
+		  alpha=".7"
+		  angle="90" />
+		</mx:filters>	
+</mx:Canvas>
